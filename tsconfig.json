@@ -7,7 +7,7 @@
     "declaration": true,
     "sourceMap": true,
     "allowJs": true,
-    "target": "ES5",
+    "target": "ES2015",
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
