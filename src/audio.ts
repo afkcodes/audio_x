@@ -1,7 +1,6 @@
 import { InitMode, PlaybackRate } from 'types';
 
 let audioInstance: HTMLAudioElement;
-
 class AudioX {
   private _audio: HTMLAudioElement;
 
@@ -32,7 +31,9 @@ class AudioX {
     ) {
       audioInstance.play();
     } else {
-      throw new Error('Audio source must be set before playing an audio');
+      throw new Error(
+        'Unable to play as the selected audio is already playing'
+      );
     }
   }
 

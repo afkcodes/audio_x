@@ -7,6 +7,7 @@ const config: Options = {
   minify: true,
   clean: true,
   treeshake: true,
+  target: 'es5',
   // terserOptions: {
   //   mangle: {
   //     eval: true,
