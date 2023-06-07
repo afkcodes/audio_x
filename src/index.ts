@@ -1,4 +1,5 @@
 import { AudioX } from 'audio';
+import { AUDIO_X_CONSTANTS } from 'constants/common';
 import type {
   AudioEvents,
   ErrorEvents,
@@ -16,4 +17,5 @@ export {
   PlaybackRate,
   InitMode,
   ErrorEvents,
+  AUDIO_X_CONSTANTS,
 };

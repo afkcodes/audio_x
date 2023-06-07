@@ -1,14 +1,15 @@
+import { AUDIO_X_CONSTANTS } from 'constants/common';
 import { InitMode, PlaybackRate } from 'types';
 
 let audioInstance: HTMLAudioElement;
 class AudioX {
   private _audio: HTMLAudioElement;
 
-  init(source: string, initMode: InitMode = 'REACT') {
+  init(source: string, initMode: InitMode = AUDIO_X_CONSTANTS.REACT) {
     if (
-      process.env.NODE_ENV !== 'development' &&
+      process.env.NODE_ENV !== AUDIO_X_CONSTANTS.DEVELOPMENT &&
       audioInstance &&
-      initMode === 'REACT'
+      initMode === AUDIO_X_CONSTANTS.REACT
     ) {
       throw new Error('Cannot create multiple audio instance');
     }
@@ -18,6 +19,7 @@ class AudioX {
       );
     }
     this._audio = new Audio(source);
+    this._audio?.setAttribute('id', 'audio_x_instance');
     audioInstance = this._audio;
   }
 
@@ -76,6 +78,15 @@ class AudioX {
     if (audioInstance) {
       audioInstance.playbackRate = playbackRate;
     }
+  }
+
+  get id() {
+    return audioInstance?.getAttribute('id');
+  }
+
+  set media(media: any) {
+    // TODO: implementation media and types
+    console.log('unimplemented media setter', media);
   }
 }
 
