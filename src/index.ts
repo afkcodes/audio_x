@@ -1,6 +1,5 @@
 import { AudioX } from 'audio';
 import { AUDIO_X_CONSTANTS } from 'constants/common';
-import { attachAudioEventListeners } from 'events/listeners';
 import type {
   AudioEvents,
   ErrorEvents,
@@ -22,6 +21,5 @@ export {
   ErrorEvents,
   MediaArtwork,
   MediaTrack,
-  attachAudioEventListeners,
   AUDIO_X_CONSTANTS,
 };
