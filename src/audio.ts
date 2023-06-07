@@ -1,15 +1,27 @@
 import { AUDIO_X_CONSTANTS } from 'constants/common';
-import { InitMode, PlaybackRate } from 'types';
+import { InitMode, MediaTrack, PlaybackRate } from 'types';
 
 let audioInstance: HTMLAudioElement;
+
 class AudioX {
   private _audio: HTMLAudioElement;
+  private static _instance: AudioX;
+
+  constructor() {
+    if (AudioX._instance) {
+      console.warn(
+        'Instantiation failed: cannot create multiple instance of AudioX returning existing instance'
+      );
+      return AudioX._instance;
+    }
+    AudioX._instance = this;
+  }
 
   init(source: string, initMode: InitMode = AUDIO_X_CONSTANTS.REACT) {
     if (
-      process.env.NODE_ENV !== AUDIO_X_CONSTANTS.DEVELOPMENT &&
+      process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
       audioInstance &&
-      initMode === AUDIO_X_CONSTANTS.REACT
+      initMode === AUDIO_X_CONSTANTS?.REACT
     ) {
       throw new Error('Cannot create multiple audio instance');
     }
@@ -59,6 +71,7 @@ class AudioX {
     if (audioInstance) {
       this.stop();
       audioInstance.src = '';
+      audioInstance.srcObject = null;
     }
   }
 
@@ -80,13 +93,29 @@ class AudioX {
     }
   }
 
+  destroy() {
+    if (audioInstance) {
+      this.reset();
+      audioInstance.removeAttribute('src');
+      audioInstance.load();
+    }
+  }
+
   get id() {
     return audioInstance?.getAttribute('id');
   }
 
-  set media(media: any) {
-    // TODO: implementation media and types
-    console.log('unimplemented media setter', media);
+  set media(media: MediaTrack) {
+    if (audioInstance) {
+      audioInstance.src = media?.source;
+    }
+    // TODO: implementation metadata
+  }
+
+  static getAudioInstance() {
+    if (audioInstance) {
+      return audioInstance;
+    }
   }
 }
 
