@@ -1,4 +1,5 @@
 import {
+  AudioInit,
   InitMode,
   MediaArtwork,
   MediaTrack,
@@ -17,5 +18,6 @@ export type {
   InitMode,
   ErrorEvents,
   MediaTrack,
+  AudioInit,
   MediaArtwork,
 };

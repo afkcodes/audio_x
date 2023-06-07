@@ -1,5 +1,6 @@
 import { AUDIO_X_CONSTANTS } from 'constants/common';
-import { InitMode, MediaTrack, PlaybackRate } from 'types';
+import { MediaTrack, PlaybackRate } from 'types';
+import { AudioInit } from 'types/audio.types';
 
 let audioInstance: HTMLAudioElement;
 
@@ -17,21 +18,43 @@ class AudioX {
     AudioX._instance = this;
   }
 
-  init(source: string, initMode: InitMode = AUDIO_X_CONSTANTS.REACT) {
+  /**
+   *
+   * @param initProps  initial config to initialize AudioX
+   * @param initProps.mediaTrack mediaTrack Object containing metadata and source of the media
+   * @param initProps.mediaTrack.title title of the Audio
+   * @param initProps.mediaTrack.source URI of the Audio
+   * @param initProps.mediaTrack.artwork artwork of the Audio
+   * @param initProps.mediaTrack.duration  duration of the audio
+   * @param initProps.mediaTrack.genre genre of the audio
+   * @param initProps.mediaTrack.album album of the audio
+   * @param initProps.mediaTrack.comment comment for the audio
+   * @param initProps.mediaTrack.year release year of the audio
+   * @param initProps.mediaTrack.artist artist of the audio
+   * @param mode mode of operation for AudioX
+   * @param preloadStrategy strategy for preloading audio
+   * @param playbackRate default playbackRate of the audio
+   * @param attachAudioEventListeners flag for registering audio events
+   * @param attachMediaSessionHandlers flag for registering mediaSession handlers
+   */
+
+  init(initProps: AudioInit) {
+    const { mode, mediaTrack, preloadStrategy = 'metadata' } = initProps;
     if (
       process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
       audioInstance &&
-      initMode === AUDIO_X_CONSTANTS?.REACT
+      mode === AUDIO_X_CONSTANTS?.REACT
     ) {
       throw new Error('Cannot create multiple audio instance');
     }
-    if (!source) {
+    if (!mediaTrack.source) {
       console.warn(
         'Initializing audio without source, this might cause initial playback failure'
       );
     }
-    this._audio = new Audio(source);
+    this._audio = new Audio(mediaTrack.source);
     this._audio?.setAttribute('id', 'audio_x_instance');
+    this._audio.preload = preloadStrategy;
     audioInstance = this._audio;
   }
 
@@ -90,6 +113,12 @@ class AudioX {
   setPlaybackRate(playbackRate: PlaybackRate) {
     if (audioInstance) {
       audioInstance.playbackRate = playbackRate;
+    }
+  }
+
+  mute() {
+    if (audioInstance && !audioInstance.muted) {
+      audioInstance.muted = true;
     }
   }
 
