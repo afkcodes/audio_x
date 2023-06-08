@@ -1,3 +1,5 @@
+import { EventListenersList } from './audioEvents.types';
+
 export type InitMode = 'REACT' | 'VANILLA';
 export type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
 export type Preload = 'none' | 'metadata' | 'auto' | '';
@@ -20,7 +22,7 @@ export interface AudioInit {
   mode: InitMode;
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;
-  attachMediaSessionHandlers?: boolean;
+  eventListenersList?: EventListenersList;
   attachAudioEventListeners?: boolean;
   autoplay: boolean;
 }

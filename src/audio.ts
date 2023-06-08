@@ -1,4 +1,5 @@
-import { AUDIO_X_CONSTANTS } from 'constants/common';
+import { AUDIO_X_CONSTANTS, DEFAULT_EVENT_LIST } from 'constants/common';
+import { attachEventListeners } from 'events/listeners';
 import { MediaTrack, PlaybackRate } from 'types';
 import { AudioInit } from 'types/audio.types';
 
@@ -45,6 +46,7 @@ class AudioX {
       mediaTrack,
       preloadStrategy = 'metadata',
       autoplay = false,
+      eventListenersList = DEFAULT_EVENT_LIST,
     } = initProps;
     if (
       process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
@@ -63,6 +65,9 @@ class AudioX {
     this._audio.preload = preloadStrategy;
     this._audio.autoplay = autoplay;
     audioInstance = this._audio;
+    if (eventListenersList && eventListenersList.length && audioInstance) {
+      attachEventListeners(eventListenersList);
+    }
   }
 
   play() {

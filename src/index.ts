@@ -1,5 +1,5 @@
 import { AudioX } from 'audio';
-import { AUDIO_X_CONSTANTS } from 'constants/common';
+import { AUDIO_X_CONSTANTS, DEFAULT_EVENT_LIST } from 'constants/common';
 import type {
   AudioEvents,
   ErrorEvents,
@@ -22,4 +22,5 @@ export {
   MediaArtwork,
   MediaTrack,
   AUDIO_X_CONSTANTS,
+  DEFAULT_EVENT_LIST,
 };
