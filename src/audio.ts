@@ -32,6 +32,7 @@ class AudioX {
    * @param initProps.mediaTrack.year release year of the audio
    * @param initProps.mediaTrack.artist artist of the audio
    * @param mode mode of operation for AudioX
+   * @param autoplay flag for autoplay
    * @param preloadStrategy strategy for preloading audio
    * @param playbackRate default playbackRate of the audio
    * @param attachAudioEventListeners flag for registering audio events
@@ -39,7 +40,12 @@ class AudioX {
    */
 
   init(initProps: AudioInit) {
-    const { mode, mediaTrack, preloadStrategy = 'metadata' } = initProps;
+    const {
+      mode,
+      mediaTrack,
+      preloadStrategy = 'metadata',
+      autoplay = false,
+    } = initProps;
     if (
       process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
       audioInstance &&
@@ -55,6 +61,7 @@ class AudioX {
     this._audio = new Audio(mediaTrack.source);
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
+    this._audio.autoplay = autoplay;
     audioInstance = this._audio;
   }
 
@@ -119,6 +126,12 @@ class AudioX {
   mute() {
     if (audioInstance && !audioInstance.muted) {
       audioInstance.muted = true;
+    }
+  }
+
+  seek(time: number) {
+    if (audioInstance) {
+      audioInstance.currentTime = time;
     }
   }
 

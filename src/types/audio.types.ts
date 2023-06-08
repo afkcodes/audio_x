@@ -22,4 +22,5 @@ export interface AudioInit {
   playbackRate?: PlaybackRate;
   attachMediaSessionHandlers?: boolean;
   attachAudioEventListeners?: boolean;
+  autoplay: boolean;
 }
