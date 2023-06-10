@@ -1,5 +1,7 @@
 import {
+  AudioError,
   AudioInit,
+  AudioState,
   InitMode,
   MediaArtwork,
   MediaTrack,
@@ -15,8 +17,10 @@ import { ErrorEvents } from './errorEvents.types';
 import { NetworkState } from './networkState.types';
 
 export type {
+  AudioError,
   AudioEvents,
   AudioInit,
+  AudioState,
   ErrorEvents,
   EventListenerCallbackMap,
   EventListenersList,

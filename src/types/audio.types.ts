@@ -26,3 +26,22 @@ export interface AudioInit {
   attachAudioEventListeners?: boolean;
   autoplay?: boolean;
 }
+
+export interface AudioError {
+  code: number | string | null;
+  message: string;
+  type: string;
+}
+export interface AudioState {
+  isBuffering: boolean;
+  isPlaying: boolean;
+  isPaused: boolean;
+  hasEnded: boolean;
+  duration: number | undefined;
+  bufferedDuration: number;
+  progress: number | undefined;
+  volume: number;
+  playbackRate: PlaybackRate;
+  error: AudioError;
+  currentTrack: MediaTrack;
+}

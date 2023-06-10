@@ -2,10 +2,12 @@ import { AUDIO_X_CONSTANTS } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import { attachEventListeners } from 'events/listeners';
 import { isValidArray } from 'helpers/common';
+import ChangeNotifier from 'helpers/notifier';
 import { MediaTrack, PlaybackRate } from 'types';
 import { AudioInit } from 'types/audio.types';
 
 let audioInstance: HTMLAudioElement;
+const notifier = ChangeNotifier;
 
 class AudioX {
   private _audio: HTMLAudioElement;
@@ -148,6 +150,15 @@ class AudioX {
       audioInstance.removeAttribute('src');
       audioInstance.load();
     }
+  }
+
+  subscribe(
+    eventName: string = 'AUDIO_X_EVENTS',
+    callback: Function = () => {},
+    state: any = {}
+  ) {
+    const unsubscribe = notifier.listen(eventName, callback, state);
+    return unsubscribe;
   }
 
   get id() {
