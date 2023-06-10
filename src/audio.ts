@@ -1,4 +1,7 @@
 import { AUDIO_X_CONSTANTS } from 'constants/common';
+import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
+import { attachEventListeners } from 'events/listeners';
+import { isValidArray } from 'helpers/common';
 import { MediaTrack, PlaybackRate } from 'types';
 import { AudioInit } from 'types/audio.types';
 
@@ -43,8 +46,9 @@ class AudioX {
     const {
       mode,
       mediaTrack,
-      preloadStrategy = 'metadata',
+      preloadStrategy = 'auto',
       autoplay = false,
+      eventListenersMap = BASE_EVENT_CALLBACK_MAP,
     } = initProps;
     if (
       process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
@@ -63,6 +67,9 @@ class AudioX {
     this._audio.preload = preloadStrategy;
     this._audio.autoplay = autoplay;
     audioInstance = this._audio;
+    if (isValidArray(Object.keys(eventListenersMap)) && audioInstance) {
+      attachEventListeners(eventListenersMap);
+    }
   }
 
   play() {
@@ -70,7 +77,7 @@ class AudioX {
     if (
       audioInstance &&
       audioInstance?.paused &&
-      audioInstance.HAVE_FUTURE_DATA &&
+      audioInstance.HAVE_ENOUGH_DATA &&
       isSourceAvailable
     ) {
       audioInstance.play();

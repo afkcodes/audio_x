@@ -12,14 +12,14 @@ import type {
 } from 'types';
 
 export {
-  AudioX,
-  ReadyState,
-  NetworkState,
+  AUDIO_X_CONSTANTS,
   AudioEvents,
-  PlaybackRate,
-  InitMode,
+  AudioX,
   ErrorEvents,
+  InitMode,
   MediaArtwork,
   MediaTrack,
-  AUDIO_X_CONSTANTS,
+  NetworkState,
+  PlaybackRate,
+  ReadyState,
 };
