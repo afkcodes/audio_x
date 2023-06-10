@@ -1,4 +1,4 @@
-import { EventListenersList } from './audioEvents.types';
+import { EventListenerCallbackMap } from './audioEvents.types';
 
 export type InitMode = 'REACT' | 'VANILLA';
 export type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
@@ -22,7 +22,7 @@ export interface AudioInit {
   mode: InitMode;
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;
-  eventListenersList?: EventListenersList;
+  eventListenersMap?: EventListenerCallbackMap;
   attachAudioEventListeners?: boolean;
-  autoplay: boolean;
+  autoplay?: boolean;
 }

@@ -1,18 +1,25 @@
 import { AudioX } from 'audio';
-import { AudioEvents, EventListenersList } from 'types/audioEvents.types';
+import { isValidArray } from 'helpers/common';
+import { AudioEvents, EventListenerCallbackMap } from 'types/audioEvents.types';
 import { AUDIO_EVENTS } from './audioEvents';
 
 /**
  * this attaches event listeners, for audio
  */
-const attachEventListeners = (eventListenersList: EventListenersList) => {
+const attachEventListeners = (
+  eventListenersCallbackMap: EventListenerCallbackMap
+) => {
   const audioInstance = AudioX.getAudioInstance();
-  eventListenersList.forEach((evt: keyof AudioEvents) => {
-    audioInstance?.addEventListener(AUDIO_EVENTS[evt], (e: any) => {
-      console.log(evt);
-      // console.log(e);
+  isValidArray(Object.keys(eventListenersCallbackMap)) &&
+    Object.keys(eventListenersCallbackMap).forEach((evt) => {
+      let event = evt as keyof AudioEvents;
+      audioInstance?.addEventListener(AUDIO_EVENTS[event], (e: any) => {
+        if (evt && eventListenersCallbackMap[event]) {
+          const listenerCallback = eventListenersCallbackMap[event];
+          listenerCallback && listenerCallback(e);
+        }
+      });
     });
-  });
 };
 
 export { attachEventListeners };

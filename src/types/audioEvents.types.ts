@@ -24,3 +24,6 @@ export interface AudioEvents {
 }
 
 export type EventListenersList = Array<keyof AudioEvents>;
+export type EventListenerCallbackMap = {
+  [key in keyof Partial<AudioEvents>]: Function;
+};
