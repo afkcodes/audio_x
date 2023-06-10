@@ -1,7 +1,5 @@
-import {
-  AUDIO_X_CONSTANTS,
-  DEFAULT_EVENT_CALLBACK_MAP,
-} from 'constants/common';
+import { AUDIO_X_CONSTANTS } from 'constants/common';
+import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import { attachEventListeners } from 'events/listeners';
 import { isValidArray } from 'helpers/common';
 import { MediaTrack, PlaybackRate } from 'types';
@@ -48,9 +46,9 @@ class AudioX {
     const {
       mode,
       mediaTrack,
-      preloadStrategy = 'metadata',
+      preloadStrategy = 'auto',
       autoplay = false,
-      eventListenersMap = DEFAULT_EVENT_CALLBACK_MAP,
+      eventListenersMap = BASE_EVENT_CALLBACK_MAP,
     } = initProps;
     if (
       process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&

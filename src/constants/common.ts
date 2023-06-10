@@ -1,4 +1,4 @@
-import { EventListenerCallbackMap, InitMode } from 'types';
+import { InitMode } from 'types';
 
 const AUDIO_X_CONSTANTS = {
   REACT: 'REACT' as InitMode,
@@ -6,13 +6,4 @@ const AUDIO_X_CONSTANTS = {
   DEVELOPMENT: 'development',
 };
 
-const DEFAULT_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
-  CAN_PLAY: (e: any) => {
-    console.log(e);
-  },
-  CAN_PLAY_THROUGH: (e: any) => {
-    console.log(e);
-  },
-};
-
-export { AUDIO_X_CONSTANTS, DEFAULT_EVENT_CALLBACK_MAP };
+export { AUDIO_X_CONSTANTS };

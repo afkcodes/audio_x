@@ -13,7 +13,7 @@ const attachEventListeners = (
   isValidArray(Object.keys(eventListenersCallbackMap)) &&
     Object.keys(eventListenersCallbackMap).forEach((evt) => {
       let event = evt as keyof AudioEvents;
-      audioInstance?.addEventListener(AUDIO_EVENTS[event], (e: any) => {
+      audioInstance?.addEventListener(AUDIO_EVENTS[event], (e: Event) => {
         if (evt && eventListenersCallbackMap[event]) {
           const listenerCallback = eventListenersCallbackMap[event];
           listenerCallback && listenerCallback(e);
