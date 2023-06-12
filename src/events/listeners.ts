@@ -16,7 +16,7 @@ const attachEventListeners = (
       audioInstance?.addEventListener(AUDIO_EVENTS[event], (e: Event) => {
         if (evt && eventListenersCallbackMap[event]) {
           const listenerCallback = eventListenersCallbackMap[event];
-          listenerCallback && listenerCallback(e);
+          if (typeof listenerCallback === 'function') listenerCallback(e);
         }
       });
     });

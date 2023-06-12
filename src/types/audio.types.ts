@@ -1,5 +1,3 @@
-import { EventListenerCallbackMap } from './audioEvents.types';
-
 export type InitMode = 'REACT' | 'VANILLA';
 export type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
 export type Preload = 'none' | 'metadata' | 'auto' | '';
@@ -22,10 +20,22 @@ export interface AudioInit {
   mode: InitMode;
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;
-  eventListenersMap?: EventListenerCallbackMap;
+  useDefaultEventListeners: boolean;
   attachAudioEventListeners?: boolean;
   autoplay?: boolean;
 }
+
+// interface DefaultAudioInitEvents extends baseAudioInit {
+//   useDefaultEventListeners: true;
+//   eventListenersMap?: null | {};
+// }
+
+// interface CustomAudioInitEvents extends baseAudioInit {
+//   useDefaultEventListeners: false;
+//   eventListenersMap: EventListenerCallbackMap;
+// }
+
+// export type AudioInit = DefaultAudioInitEvents | CustomAudioInitEvents;
 
 export interface AudioError {
   code: number | string | null;
