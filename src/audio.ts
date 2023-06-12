@@ -169,7 +169,7 @@ class AudioX {
   }
 
   subscribe(
-    eventName: string = 'AUDIO_X_EVENTS',
+    eventName: string = 'AUDIO_X_STATE',
     callback: Function = () => {},
     state: any = {}
   ) {

@@ -16,9 +16,9 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       duration: audioInstance?.duration,
     };
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_state_${e.type}`
     );
   },
 
@@ -26,74 +26,83 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     console.log(e.type);
     mutableAudioState = { ...mutableAudioState, isBuffering: true };
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
   CAN_PLAY_THROUGH: (e: Event) => {
     console.log(e.type);
-    mutableAudioState = { ...mutableAudioState, isBuffering: true };
+    mutableAudioState = {
+      ...mutableAudioState,
+      isBuffering: true,
+    };
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
   PLAY: (e: Event) => {
+    const audioInstance = AudioX.getAudioInstance();
+
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: false,
       isPlaying: true,
       isPaused: false,
-      progress: e.timeStamp,
+      progress: audioInstance?.currentTime,
     };
     console.log(e.type);
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
   PAUSE: (e: Event) => {
+    const audioInstance = AudioX.getAudioInstance();
+
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: false,
       isPlaying: false,
       isPaused: true,
-      progress: e.timeStamp,
+      progress: audioInstance?.currentTime,
     };
     console.log(e.type);
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
   ENDED: (e: Event) => {
+    const audioInstance = AudioX.getAudioInstance();
+
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: false,
       isPlaying: false,
       isPaused: true,
       hasEnded: true,
-      progress: e.timeStamp,
+      progress: audioInstance?.currentTime,
     };
     console.log(e.type);
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
   ERROR: (e: Event) => {
     console.log(e.type);
-    notifier.notify('AUDIO_X_EVENTS', {}, `audiox_baseEvents_${e.type}`);
+    notifier.notify('AUDIO_X_STATE', {}, `audiox_baseEvents_state_${e.type}`);
   },
 
   TIME_UPDATE: (e: Event) => {
@@ -109,28 +118,31 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     };
     console.log(e.type);
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
   WAITING: (e: Event) => {
+    const audioInstance = AudioX.getAudioInstance();
+
     console.log(e.type);
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: true,
+      progress: audioInstance?.currentTime,
     };
     notifier.notify(
-      'AUDIO_X_EVENTS',
+      'AUDIO_X_STATE',
       mutableAudioState,
-      `audiox_baseEvents_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
   VOLUME_CHANGE: (e: Event) => {
     console.log(e.type);
-    notifier.notify('AUDIO_X_EVENTS', {}, `audiox_baseEvents`);
+    notifier.notify('AUDIO_X_STATE', {}, `audiox_baseEvents_state`);
   },
 };
 
