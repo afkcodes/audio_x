@@ -1,4 +1,3 @@
-import { AudioX } from 'audio';
 import ChangeNotifier from 'helpers/notifier';
 import { AUDIO_STATE } from 'states/audioState';
 import { EventListenerCallbackMap } from 'types';
@@ -7,9 +6,8 @@ const notifier = ChangeNotifier;
 let mutableAudioState = AUDIO_STATE;
 
 const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
-  LOADED_META_DATA: (e: Event) => {
+  LOADED_META_DATA: (e: Event, audioInstance: HTMLAudioElement) => {
     console.log(e.type);
-    const audioInstance = AudioX.getAudioInstance();
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: true,
@@ -45,9 +43,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     );
   },
 
-  PLAY: (e: Event) => {
-    const audioInstance = AudioX.getAudioInstance();
-
+  PLAY: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: false,
@@ -63,9 +59,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     );
   },
 
-  PAUSE: (e: Event) => {
-    const audioInstance = AudioX.getAudioInstance();
-
+  PAUSE: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: false,
@@ -81,9 +75,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     );
   },
 
-  ENDED: (e: Event) => {
-    const audioInstance = AudioX.getAudioInstance();
-
+  ENDED: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: false,
@@ -105,9 +97,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     notifier.notify('AUDIO_X_STATE', {}, `audiox_baseEvents_state_${e.type}`);
   },
 
-  TIME_UPDATE: (e: Event) => {
-    const audioInstance = AudioX.getAudioInstance();
-
+  TIME_UPDATE: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
       isBuffering: false,
@@ -124,9 +114,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     );
   },
 
-  WAITING: (e: Event) => {
-    const audioInstance = AudioX.getAudioInstance();
-
+  WAITING: (e: Event, audioInstance: HTMLAudioElement) => {
     console.log(e.type);
     mutableAudioState = {
       ...mutableAudioState,

@@ -1,8 +1,11 @@
 import { AUDIO_X_CONSTANTS } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
-import { attachEventListeners } from 'events/listeners';
+import {
+  attachCustomEventListeners,
+  attachDefaultEventListeners,
+} from 'events/listeners';
 import ChangeNotifier from 'helpers/notifier';
-import { EventListenerCallbackMap, MediaTrack, PlaybackRate } from 'types';
+import { EventListenersList, MediaTrack, PlaybackRate } from 'types';
 import { AudioInit } from 'types/audio.types';
 
 let audioInstance: HTMLAudioElement;
@@ -43,7 +46,7 @@ class AudioX {
    * @param attachMediaSessionHandlers flag for registering mediaSession handlers
    */
 
-  init(initProps: AudioInit) {
+  async init(initProps: AudioInit) {
     const {
       mode,
       mediaTrack,
@@ -71,7 +74,7 @@ class AudioX {
     this._audio.autoplay = autoplay;
     audioInstance = this._audio;
     if (useDefaultEventListeners) {
-      attachEventListeners(BASE_EVENT_CALLBACK_MAP);
+      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
     }
     // else {
     //   try {
@@ -168,17 +171,13 @@ class AudioX {
     }
   }
 
-  subscribe(
-    eventName: string = 'AUDIO_X_STATE',
-    callback: Function = () => {},
-    state: any = {}
-  ) {
+  subscribe(eventName: string, callback: Function = () => {}, state: any = {}) {
     const unsubscribe = notifier.listen(eventName, callback, state);
     return unsubscribe;
   }
 
-  attachEventListeners(eventListenersCallbackMap: EventListenerCallbackMap) {
-    attachEventListeners(eventListenersCallbackMap);
+  attachCustomEventListeners(eventListenersList: EventListenersList) {
+    attachCustomEventListeners(eventListenersList);
   }
 
   get id() {

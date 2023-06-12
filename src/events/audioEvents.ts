@@ -24,3 +24,7 @@ export const AUDIO_EVENTS: AudioEvents = Object.freeze({
   LOAD_START: 'loadstart',
   ERROR: 'error',
 });
+
+export const CUSTOM_AUDIO_EVENTS = Object.freeze({
+  AUDIO_X_STATE: 'AUDIO_X_STATE',
+});
