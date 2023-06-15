@@ -53,7 +53,6 @@ class AudioX {
       preloadStrategy = 'auto',
       autoplay = false,
       useDefaultEventListeners = true,
-      // eventListenersMap,
     } = initProps;
     if (
       process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
@@ -76,22 +75,6 @@ class AudioX {
     if (useDefaultEventListeners) {
       attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
     }
-    // else {
-    //   try {
-    //     if (
-    //       eventListenersMap &&
-    //       isValidObject(eventListenersMap) &&
-    //       isValidArray(Object.keys(eventListenersMap)) &&
-    //       audioInstance
-    //     ) {
-    //       attachEventListeners(eventListenersMap);
-    //     }
-    //   } catch (error) {
-    //     throw new Error(
-    //       'Unable to attach event Listeners, eventListeners must be provided when useDefaultEventListeners is true '
-    //     );
-    //   }
-    // }
   }
 
   async play() {
@@ -176,7 +159,7 @@ class AudioX {
     return unsubscribe;
   }
 
-  attachCustomEventListeners(eventListenersList: EventListenersList) {
+  attachEventListeners(eventListenersList: EventListenersList) {
     attachCustomEventListeners(eventListenersList);
   }
 

@@ -14,6 +14,7 @@ import type {
   MediaArtwork,
   MediaTrack,
   NetworkState,
+  PlayBackState,
   PlaybackRate,
   ReadyState,
 } from 'types';
@@ -34,6 +35,7 @@ export {
   MediaArtwork,
   MediaTrack,
   NetworkState,
+  PlayBackState,
   PlaybackRate,
   ReadyState,
 };

@@ -1,3 +1,4 @@
+import { PLAYBACK_STATE } from 'constants/common';
 import { ReadyState } from 'types';
 import { AudioState, MediaTrack } from 'types/audio.types';
 
@@ -10,10 +11,7 @@ export const readyState: ReadyState = Object.freeze({
 });
 
 export const AUDIO_STATE: AudioState = {
-  isBuffering: true,
-  isPlaying: false,
-  isPaused: true,
-  hasEnded: true,
+  playbackState: PLAYBACK_STATE.IDLE,
   duration: 0,
   bufferedDuration: 0,
   progress: 0,

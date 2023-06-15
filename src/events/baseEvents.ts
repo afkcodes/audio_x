@@ -1,3 +1,4 @@
+import { PLAYBACK_STATE } from 'constants/common';
 import ChangeNotifier from 'helpers/notifier';
 import { AUDIO_STATE } from 'states/audioState';
 import { EventListenerCallbackMap } from 'types';
@@ -10,7 +11,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     console.log(e.type);
     mutableAudioState = {
       ...mutableAudioState,
-      isBuffering: true,
+      playbackState: PLAYBACK_STATE.BUFFERING,
       duration: audioInstance?.duration,
     };
     notifier.notify(
@@ -22,7 +23,10 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
 
   CAN_PLAY: (e: Event) => {
     console.log(e.type);
-    mutableAudioState = { ...mutableAudioState, isBuffering: true };
+    mutableAudioState = {
+      ...mutableAudioState,
+      playbackState: PLAYBACK_STATE.BUFFERING,
+    };
     notifier.notify(
       'AUDIO_X_STATE',
       mutableAudioState,
@@ -34,7 +38,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     console.log(e.type);
     mutableAudioState = {
       ...mutableAudioState,
-      isBuffering: true,
+      playbackState: PLAYBACK_STATE.READY,
     };
     notifier.notify(
       'AUDIO_X_STATE',
@@ -46,9 +50,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   PLAY: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
-      isBuffering: false,
-      isPlaying: true,
-      isPaused: false,
+      playbackState: PLAYBACK_STATE.PLAYING,
       progress: audioInstance?.currentTime,
     };
     console.log(e.type);
@@ -62,9 +64,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   PAUSE: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
-      isBuffering: false,
-      isPlaying: false,
-      isPaused: true,
+      playbackState: PLAYBACK_STATE.PAUSED,
       progress: audioInstance?.currentTime,
     };
     console.log(e.type);
@@ -78,10 +78,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   ENDED: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
-      isBuffering: false,
-      isPlaying: false,
-      isPaused: true,
-      hasEnded: true,
+      playbackState: PLAYBACK_STATE.ENDED,
       progress: audioInstance?.currentTime,
     };
     console.log(e.type);
@@ -100,10 +97,6 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   TIME_UPDATE: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
-      isBuffering: false,
-      isPlaying: true,
-      isPaused: false,
-      hasEnded: false,
       progress: audioInstance?.currentTime,
     };
     console.log(e.type);
@@ -118,7 +111,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     console.log(e.type);
     mutableAudioState = {
       ...mutableAudioState,
-      isBuffering: true,
+      playbackState: PLAYBACK_STATE.BUFFERING,
       progress: audioInstance?.currentTime,
     };
     notifier.notify(

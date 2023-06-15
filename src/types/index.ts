@@ -6,6 +6,7 @@ import {
   MediaArtwork,
   MediaTrack,
   PlaybackRate,
+  PlayBackState,
 } from './audio.types';
 import {
   AudioEvents,
@@ -29,5 +30,6 @@ export type {
   MediaTrack,
   NetworkState,
   PlaybackRate,
+  PlayBackState,
   ReadyState,
 };

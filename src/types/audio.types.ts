@@ -1,6 +1,15 @@
 export type InitMode = 'REACT' | 'VANILLA';
 export type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
 export type Preload = 'none' | 'metadata' | 'auto' | '';
+export type PlayBackState =
+  | 'idle'
+  | 'playing'
+  | 'ended'
+  | 'ready'
+  | 'paused'
+  | 'stalled'
+  | 'error'
+  | 'buffering';
 
 export type MediaArtwork = { src: string; name?: string; sizes?: string };
 export interface MediaTrack {
@@ -25,28 +34,14 @@ export interface AudioInit {
   autoplay?: boolean;
 }
 
-// interface DefaultAudioInitEvents extends baseAudioInit {
-//   useDefaultEventListeners: true;
-//   eventListenersMap?: null | {};
-// }
-
-// interface CustomAudioInitEvents extends baseAudioInit {
-//   useDefaultEventListeners: false;
-//   eventListenersMap: EventListenerCallbackMap;
-// }
-
-// export type AudioInit = DefaultAudioInitEvents | CustomAudioInitEvents;
-
 export interface AudioError {
   code: number | string | null;
   message: string;
   type: string;
 }
+
 export interface AudioState {
-  isBuffering: boolean;
-  isPlaying: boolean;
-  isPaused: boolean;
-  hasEnded: boolean;
+  playbackState: PlayBackState;
   duration: number | undefined;
   bufferedDuration: number;
   progress: number | undefined;
