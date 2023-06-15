@@ -1,11 +1,15 @@
 import { AUDIO_X_CONSTANTS } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
-import { attachEventListeners } from 'events/listeners';
-import { isValidArray } from 'helpers/common';
-import { MediaTrack, PlaybackRate } from 'types';
+import {
+  attachCustomEventListeners,
+  attachDefaultEventListeners,
+} from 'events/listeners';
+import ChangeNotifier from 'helpers/notifier';
+import { EventListenersList, MediaTrack, PlaybackRate } from 'types';
 import { AudioInit } from 'types/audio.types';
 
 let audioInstance: HTMLAudioElement;
+const notifier = ChangeNotifier;
 
 class AudioX {
   private _audio: HTMLAudioElement;
@@ -42,13 +46,13 @@ class AudioX {
    * @param attachMediaSessionHandlers flag for registering mediaSession handlers
    */
 
-  init(initProps: AudioInit) {
+  async init(initProps: AudioInit) {
     const {
       mode,
       mediaTrack,
       preloadStrategy = 'auto',
       autoplay = false,
-      eventListenersMap = BASE_EVENT_CALLBACK_MAP,
+      useDefaultEventListeners = true,
     } = initProps;
     if (
       process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
@@ -62,25 +66,25 @@ class AudioX {
         'Initializing audio without source, this might cause initial playback failure'
       );
     }
+
     this._audio = new Audio(mediaTrack.source);
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
     this._audio.autoplay = autoplay;
     audioInstance = this._audio;
-    if (isValidArray(Object.keys(eventListenersMap)) && audioInstance) {
-      attachEventListeners(eventListenersMap);
+    if (useDefaultEventListeners) {
+      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
     }
   }
 
-  play() {
+  async play() {
     const isSourceAvailable = audioInstance.src !== '';
     if (
-      audioInstance &&
       audioInstance?.paused &&
       audioInstance.HAVE_ENOUGH_DATA &&
       isSourceAvailable
     ) {
-      audioInstance.play();
+      await audioInstance.play();
     } else {
       throw new Error(
         'Unable to play as the selected audio is already playing'
@@ -148,6 +152,15 @@ class AudioX {
       audioInstance.removeAttribute('src');
       audioInstance.load();
     }
+  }
+
+  subscribe(eventName: string, callback: Function = () => {}, state: any = {}) {
+    const unsubscribe = notifier.listen(eventName, callback, state);
+    return unsubscribe;
+  }
+
+  attachEventListeners(eventListenersList: EventListenersList) {
+    attachCustomEventListeners(eventListenersList);
   }
 
   get id() {

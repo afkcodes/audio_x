@@ -23,7 +23,17 @@ export interface AudioEvents {
   ERROR: 'error';
 }
 
-export type EventListenersList = Array<keyof AudioEvents>;
+export interface CustomAudioState {
+  AUDIO_X_STATE: 'AUDIO_X_STATE';
+}
+
+export type EventListenersList =
+  | Array<keyof AudioEvents>
+  | Array<keyof CustomAudioState>;
+
 export type EventListenerCallbackMap = {
-  [key in keyof Partial<AudioEvents>]: Function;
+  [key in keyof Partial<AudioEvents>]: (
+    e: Event,
+    audioInstance: HTMLAudioElement
+  ) => void;
 };
