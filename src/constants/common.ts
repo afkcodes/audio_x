@@ -1,4 +1,5 @@
 import { InitMode } from 'types';
+import { ErrorMessageMap } from 'types/errorEvents.types';
 
 const AUDIO_X_CONSTANTS = Object.freeze({
   REACT: 'REACT' as InitMode,
@@ -17,4 +18,13 @@ const PLAYBACK_STATE = Object.freeze({
   ERROR: 'error',
 });
 
-export { AUDIO_X_CONSTANTS, PLAYBACK_STATE };
+const ERROR_MSG_MAP: ErrorMessageMap = Object.freeze({
+  MEDIA_ERR_ABORTED: 'The user canceled the audio.',
+  MEDIA_ERR_DECODE: 'An error occurred while decoding the audio.',
+  MEDIA_ERR_NETWORK: 'A network error occurred while fetching the audio.',
+  MEDIA_ERR_SRC_NOT_SUPPORTED:
+    'The audio is missing or is in a format not supported by your browser.',
+  DEFAULT: 'An unknown error occurred.',
+});
+
+export { AUDIO_X_CONSTANTS, ERROR_MSG_MAP, PLAYBACK_STATE };

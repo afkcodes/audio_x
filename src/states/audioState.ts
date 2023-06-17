@@ -20,7 +20,7 @@ export const AUDIO_STATE: AudioState = {
   error: {
     code: null,
     message: '',
-    type: '',
+    readable: '',
   },
   currentTrack: {} as MediaTrack,
 };
