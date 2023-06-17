@@ -37,7 +37,7 @@ export interface AudioInit {
 export interface AudioError {
   code: number | string | null;
   message: string;
-  type: string;
+  readable: string;
 }
 
 export interface AudioState {

@@ -1,7 +1,9 @@
 import { PLAYBACK_STATE } from 'constants/common';
+import { getReadableErrorMessage } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 import { AUDIO_STATE } from 'states/audioState';
 import { EventListenerCallbackMap } from 'types';
+import { ERROR_EVENTS } from './errorEvents';
 const notifier = ChangeNotifier;
 
 let mutableAudioState = AUDIO_STATE;
@@ -89,9 +91,23 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     );
   },
 
-  ERROR: (e: Event) => {
-    console.log(e.type);
-    notifier.notify('AUDIO_X_STATE', {}, `audiox_baseEvents_state_${e.type}`);
+  ERROR: (e: Event, audioInstance: HTMLAudioElement) => {
+    const errorCode = audioInstance.error?.code as keyof typeof ERROR_EVENTS;
+    const message = getReadableErrorMessage(audioInstance);
+    mutableAudioState = {
+      ...mutableAudioState,
+      playbackState: PLAYBACK_STATE.PAUSED,
+      error: {
+        code: errorCode,
+        message: ERROR_EVENTS[errorCode],
+        readable: message,
+      },
+    };
+    notifier.notify(
+      'AUDIO_X_STATE',
+      mutableAudioState,
+      `audiox_baseEvents_state_${e.type}`
+    );
   },
 
   TIME_UPDATE: (e: Event, audioInstance: HTMLAudioElement) => {

@@ -4,3 +4,10 @@ export interface ErrorEvents {
   2: 'MEDIA_ERR_NETWORK';
   4: 'MEDIA_ERR_SRC_NOT_SUPPORTED';
 }
+
+type ErrorKey = keyof ErrorEvents;
+type ErrorValue = ErrorEvents[ErrorKey];
+
+export type ErrorMessageMap = {
+  [key in ErrorValue | 'DEFAULT']: string;
+};
