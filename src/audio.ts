@@ -15,14 +15,37 @@ class AudioX {
   private _audio: HTMLAudioElement;
   private static _instance: AudioX;
 
-  constructor() {
+  constructor(initProps: AudioInit) {
     if (AudioX._instance) {
       console.warn(
         'Instantiation failed: cannot create multiple instance of AudioX returning existing instance'
       );
       return AudioX._instance;
     }
+
+    const {
+      mode,
+      preloadStrategy = 'auto',
+      autoplay = false,
+      useDefaultEventListeners = true,
+    } = initProps;
+    if (
+      process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
+      audioInstance &&
+      mode === AUDIO_X_CONSTANTS?.REACT
+    ) {
+      throw new Error('Cannot create multiple audio instance');
+    }
+
     AudioX._instance = this;
+    this._audio = new Audio();
+    this._audio?.setAttribute('id', 'audio_x_instance');
+    this._audio.preload = preloadStrategy;
+    this._audio.autoplay = autoplay;
+    audioInstance = this._audio;
+    if (useDefaultEventListeners) {
+      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
+    }
   }
 
   /**
@@ -46,42 +69,47 @@ class AudioX {
    * @param attachMediaSessionHandlers flag for registering mediaSession handlers
    */
 
-  async init(initProps: AudioInit) {
-    const {
-      mode,
-      mediaTrack,
-      preloadStrategy = 'auto',
-      autoplay = false,
-      useDefaultEventListeners = true,
-    } = initProps;
-    if (
-      process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
-      audioInstance &&
-      mode === AUDIO_X_CONSTANTS?.REACT
-    ) {
-      throw new Error('Cannot create multiple audio instance');
-    }
-    if (!mediaTrack.source) {
-      console.warn(
-        'Initializing audio without source, this might cause initial playback failure'
-      );
-    }
+  // async init(initProps: AudioInit) {
+  //   const {
+  //     mode,
+  //     mediaTrack,
+  //     preloadStrategy = 'auto',
+  //     autoplay = false,
+  //     useDefaultEventListeners = true,
+  //   } = initProps;
+  //   if (
+  //     process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
+  //     audioInstance &&
+  //     mode === AUDIO_X_CONSTANTS?.REACT
+  //   ) {
+  //     throw new Error('Cannot create multiple audio instance');
+  //   }
+  //   if (!mediaTrack.source) {
+  //     console.warn(
+  //       'Initializing audio without source, this might cause initial playback failure'
+  //     );
+  //   }
 
-    this._audio = new Audio(mediaTrack.source);
-    this._audio?.setAttribute('id', 'audio_x_instance');
-    this._audio.preload = preloadStrategy;
-    this._audio.autoplay = autoplay;
-    audioInstance = this._audio;
-    if (useDefaultEventListeners) {
-      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
-    }
+  //   this._audio?.setAttribute('id', 'audio_x_instance');
+  //   this._audio.preload = preloadStrategy;
+  //   this._audio.autoplay = autoplay;
+  //   audioInstance = this._audio;
+  //   if (useDefaultEventListeners) {
+  //     attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
+  //   }
+  // }
+
+  async addMedia(mediaTrack: MediaTrack) {
+    this.reset();
+    audioInstance.src = mediaTrack.source;
+    // audioInstance.load();
   }
 
   async play() {
     const isSourceAvailable = audioInstance.src !== '';
     if (
       audioInstance?.paused &&
-      audioInstance.HAVE_ENOUGH_DATA &&
+      audioInstance.HAVE_ENOUGH_DATA === 4 &&
       isSourceAvailable
     ) {
       await audioInstance.play();
@@ -175,9 +203,7 @@ class AudioX {
   }
 
   static getAudioInstance() {
-    if (audioInstance) {
-      return audioInstance;
-    }
+    return audioInstance;
   }
 }
 
