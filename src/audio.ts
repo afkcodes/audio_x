@@ -103,7 +103,7 @@ class AudioX {
     await this.reset().then(() => {
       audioInstance.src = mediaTrack.source;
     });
-    // audioInstance.load();
+    audioInstance.load();
   }
 
   async play() {
@@ -114,10 +114,6 @@ class AudioX {
       isSourceAvailable
     ) {
       await audioInstance.play();
-    } else {
-      throw new Error(
-        'Unable to play as the selected audio is already playing'
-      );
     }
   }
 
@@ -130,7 +126,6 @@ class AudioX {
         this.subscribe('AUDIO_X_STATE', (state: AudioState) => {
           if (state.playbackState === 'ready') {
             setTimeout(async () => {
-              this.stop();
               await this.play();
             }, 950);
           }
