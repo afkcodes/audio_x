@@ -14,7 +14,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     mutableAudioState = {
       ...mutableAudioState,
       playbackState: PLAYBACK_STATE.BUFFERING,
-      duration: audioInstance?.duration,
+      duration: audioInstance?.duration
     };
     notifier.notify(
       'AUDIO_X_STATE',
@@ -27,7 +27,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     console.log(e.type);
     mutableAudioState = {
       ...mutableAudioState,
-      playbackState: PLAYBACK_STATE.BUFFERING,
+      playbackState: PLAYBACK_STATE.BUFFERING
     };
     notifier.notify(
       'AUDIO_X_STATE',
@@ -40,7 +40,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     console.log(e.type);
     mutableAudioState = {
       ...mutableAudioState,
-      playbackState: PLAYBACK_STATE.READY,
+      playbackState: PLAYBACK_STATE.READY
     };
     notifier.notify(
       'AUDIO_X_STATE',
@@ -53,7 +53,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     mutableAudioState = {
       ...mutableAudioState,
       playbackState: PLAYBACK_STATE.PLAYING,
-      progress: audioInstance?.currentTime,
+      progress: audioInstance?.currentTime
     };
     console.log(e.type);
     notifier.notify(
@@ -67,7 +67,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     mutableAudioState = {
       ...mutableAudioState,
       playbackState: PLAYBACK_STATE.PAUSED,
-      progress: audioInstance?.currentTime,
+      progress: audioInstance?.currentTime
     };
     console.log(e.type);
     notifier.notify(
@@ -81,7 +81,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     mutableAudioState = {
       ...mutableAudioState,
       playbackState: PLAYBACK_STATE.ENDED,
-      progress: audioInstance?.currentTime,
+      progress: audioInstance?.currentTime
     };
     console.log(e.type);
     notifier.notify(
@@ -100,8 +100,8 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       error: {
         code: errorCode,
         message: ERROR_EVENTS[errorCode],
-        readable: message,
-      },
+        readable: message
+      }
     };
     notifier.notify(
       'AUDIO_X_STATE',
@@ -113,9 +113,10 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   TIME_UPDATE: (e: Event, audioInstance: HTMLAudioElement) => {
     mutableAudioState = {
       ...mutableAudioState,
-      progress: audioInstance?.currentTime,
+      playbackState: PLAYBACK_STATE.PLAYING,
+      progress: audioInstance?.currentTime
     };
-    console.log(e.type);
+
     notifier.notify(
       'AUDIO_X_STATE',
       mutableAudioState,
@@ -128,7 +129,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     mutableAudioState = {
       ...mutableAudioState,
       playbackState: PLAYBACK_STATE.BUFFERING,
-      progress: audioInstance?.currentTime,
+      progress: audioInstance?.currentTime
     };
     notifier.notify(
       'AUDIO_X_STATE',
@@ -140,7 +141,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   VOLUME_CHANGE: (e: Event) => {
     console.log(e.type);
     notifier.notify('AUDIO_X_STATE', {}, `audiox_baseEvents_state`);
-  },
+  }
 };
 
 export { BASE_EVENT_CALLBACK_MAP };
