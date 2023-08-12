@@ -25,7 +25,7 @@ export interface MediaTrack {
 }
 
 export interface AudioInit {
-  mediaTrack: MediaTrack;
+  // mediaTrack: MediaTrack;
   mode: InitMode;
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;

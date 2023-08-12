@@ -2,11 +2,11 @@ import { AUDIO_X_CONSTANTS } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import {
   attachCustomEventListeners,
-  attachDefaultEventListeners,
+  attachDefaultEventListeners
 } from 'events/listeners';
 import ChangeNotifier from 'helpers/notifier';
 import { EventListenersList, MediaTrack, PlaybackRate } from 'types';
-import { AudioInit } from 'types/audio.types';
+import { AudioInit, AudioState } from 'types/audio.types';
 
 let audioInstance: HTMLAudioElement;
 const notifier = ChangeNotifier;
@@ -15,14 +15,37 @@ class AudioX {
   private _audio: HTMLAudioElement;
   private static _instance: AudioX;
 
-  constructor() {
+  constructor(initProps: AudioInit) {
     if (AudioX._instance) {
       console.warn(
         'Instantiation failed: cannot create multiple instance of AudioX returning existing instance'
       );
       return AudioX._instance;
     }
+
+    const {
+      mode,
+      preloadStrategy = 'auto',
+      autoplay = false,
+      useDefaultEventListeners = true
+    } = initProps;
+    if (
+      process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
+      audioInstance &&
+      mode === AUDIO_X_CONSTANTS?.REACT
+    ) {
+      throw new Error('Cannot create multiple audio instance');
+    }
+
     AudioX._instance = this;
+    this._audio = new Audio();
+    this._audio?.setAttribute('id', 'audio_x_instance');
+    this._audio.preload = preloadStrategy;
+    this._audio.autoplay = autoplay;
+    audioInstance = this._audio;
+    if (useDefaultEventListeners) {
+      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
+    }
   }
 
   /**
@@ -46,49 +69,68 @@ class AudioX {
    * @param attachMediaSessionHandlers flag for registering mediaSession handlers
    */
 
-  async init(initProps: AudioInit) {
-    const {
-      mode,
-      mediaTrack,
-      preloadStrategy = 'auto',
-      autoplay = false,
-      useDefaultEventListeners = true,
-    } = initProps;
-    if (
-      process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
-      audioInstance &&
-      mode === AUDIO_X_CONSTANTS?.REACT
-    ) {
-      throw new Error('Cannot create multiple audio instance');
-    }
-    if (!mediaTrack.source) {
-      console.warn(
-        'Initializing audio without source, this might cause initial playback failure'
-      );
-    }
+  // async init(initProps: AudioInit) {
+  //   const {
+  //     mode,
+  //     mediaTrack,
+  //     preloadStrategy = 'auto',
+  //     autoplay = false,
+  //     useDefaultEventListeners = true,
+  //   } = initProps;
+  //   if (
+  //     process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
+  //     audioInstance &&
+  //     mode === AUDIO_X_CONSTANTS?.REACT
+  //   ) {
+  //     throw new Error('Cannot create multiple audio instance');
+  //   }
+  //   if (!mediaTrack.source) {
+  //     console.warn(
+  //       'Initializing audio without source, this might cause initial playback failure'
+  //     );
+  //   }
 
-    this._audio = new Audio(mediaTrack.source);
-    this._audio?.setAttribute('id', 'audio_x_instance');
-    this._audio.preload = preloadStrategy;
-    this._audio.autoplay = autoplay;
-    audioInstance = this._audio;
-    if (useDefaultEventListeners) {
-      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
-    }
+  //   this._audio?.setAttribute('id', 'audio_x_instance');
+  //   this._audio.preload = preloadStrategy;
+  //   this._audio.autoplay = autoplay;
+  //   audioInstance = this._audio;
+  //   if (useDefaultEventListeners) {
+  //     attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
+  //   }
+  // }
+
+  async addMedia(mediaTrack: MediaTrack) {
+    await this.reset().then(() => {
+      audioInstance.src = mediaTrack.source;
+    });
+    audioInstance.load();
   }
 
   async play() {
     const isSourceAvailable = audioInstance.src !== '';
     if (
       audioInstance?.paused &&
-      audioInstance.HAVE_ENOUGH_DATA &&
+      audioInstance.HAVE_ENOUGH_DATA === 4 &&
       isSourceAvailable
     ) {
       await audioInstance.play();
-    } else {
-      throw new Error(
-        'Unable to play as the selected audio is already playing'
-      );
+    }
+  }
+
+  async playNextTrack(mediaTrack: MediaTrack) {
+    if (mediaTrack) {
+      this.addMedia(mediaTrack).then(() => {
+        /* check if can be handled in a better way without subscribing to audio state, 
+          although this at use doesn't seems to be behaving weirdly
+        */
+        this.subscribe('AUDIO_X_STATE', (state: AudioState) => {
+          if (state.playbackState === 'ready') {
+            setTimeout(async () => {
+              await this.play();
+            }, 950);
+          }
+        });
+      });
     }
   }
 
@@ -99,7 +141,7 @@ class AudioX {
   }
 
   stop() {
-    if (audioInstance) {
+    if (audioInstance && !audioInstance.paused) {
       audioInstance?.pause();
       audioInstance.currentTime = 0;
     }
@@ -108,7 +150,7 @@ class AudioX {
   /**
    * @method reset :  This stops the playback and resets all the state of the audio
    */
-  reset() {
+  async reset() {
     if (audioInstance) {
       this.stop();
       audioInstance.src = '';
@@ -146,9 +188,9 @@ class AudioX {
     }
   }
 
-  destroy() {
+  async destroy() {
     if (audioInstance) {
-      this.reset();
+      await this.reset();
       audioInstance.removeAttribute('src');
       audioInstance.load();
     }
@@ -175,9 +217,7 @@ class AudioX {
   }
 
   static getAudioInstance() {
-    if (audioInstance) {
-      return audioInstance;
-    }
+    return audioInstance;
   }
 }
 
