@@ -3,13 +3,13 @@ import ChangeNotifier from 'helpers/notifier';
 import { ReadyState } from 'types';
 import { AudioState, MediaTrack } from 'types/audio.types';
 
-export const readyState: ReadyState = Object.freeze({
-  0: 'HAVE_NOTHING',
-  1: 'HAVE_METADATA',
-  2: 'HAVE_CURRENT_DATA',
-  3: 'HAVE_FUTURE_DATA',
-  4: 'HAVE_ENOUGH_DATA'
-});
+export const READY_STATE: ReadyState = {
+  HAVE_NOTHING: 0,
+  HAVE_METADATA: 1,
+  HAVE_CURRENT_DATA: 2,
+  HAVE_FUTURE_DATA: 3,
+  HAVE_ENOUGH_DATA: 4
+};
 
 export const AUDIO_STATE: AudioState = {
   playbackState: PLAYBACK_STATE.IDLE,
