@@ -90,6 +90,7 @@ class AudioX {
         currentTrack: mediaTrack
       });
       updateMetaData(mediaTrack);
+      audioInstance.load();
     }
   }
 
