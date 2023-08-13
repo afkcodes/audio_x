@@ -17,7 +17,7 @@ export type MediaArtwork = { src: string; name?: string; sizes?: string };
 export interface MediaTrack {
   title: string;
   source: string;
-  artwork?: MediaArtwork[];
+  artwork: MediaArtwork[] | null;
   duration?: number;
   genre?: string;
   album?: string;
@@ -33,6 +33,7 @@ export interface AudioInit {
   playbackRate?: PlaybackRate;
   customEventListeners?: EventListenerCallbackMap | null;
   autoplay?: boolean;
+  showNotificationActions: boolean;
 }
 
 export interface AudioError {

@@ -1,4 +1,5 @@
 import { ERROR_MSG_MAP } from 'constants/common';
+import { MediaTrack } from 'types';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
 const isValidFunction = (fn: any) =>
@@ -37,10 +38,34 @@ const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
   return message;
 };
 
+const metaDataCreator = (mediaTrack: MediaTrack) => {
+  const { title, album, artist, artwork } = mediaTrack;
+  const artworkUrl = artwork ? artwork[0]?.src : '';
+  const sizes = [
+    '96x96',
+    '128x128',
+    '192x192',
+    '256x256',
+    '384x384',
+    '512x512'
+  ];
+  const artworkMap = sizes.map((el) => {
+    return { src: artworkUrl, sizes: el, type: 'image/png' };
+  });
+  const metaData = {
+    title,
+    album,
+    artist,
+    artwork: artworkMap
+  };
+  return metaData;
+};
+
 export {
   getReadableErrorMessage,
   isValidArray,
   isValidFunction,
   isValidObject,
-  isValidWindow
+  isValidWindow,
+  metaDataCreator
 };
