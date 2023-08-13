@@ -1,11 +1,14 @@
 import { ERROR_MSG_MAP } from 'constants/common';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
-const isValidFunction = (value: any) =>
-  value instanceof Function && typeof value === 'function';
+const isValidFunction = (fn: any) =>
+  fn instanceof Function && typeof fn === 'function';
 
-const isValidObject = (value: any) =>
-  typeof value === 'object' && value !== null;
+const isValidObject = (obj: any) =>
+  typeof obj === 'object' &&
+  obj !== null &&
+  obj instanceof Object &&
+  Object.keys(obj).length;
 
 const isValidWindow = typeof window !== undefined && window instanceof Window;
 
@@ -39,5 +42,5 @@ export {
   isValidArray,
   isValidFunction,
   isValidObject,
-  isValidWindow,
+  isValidWindow
 };

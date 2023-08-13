@@ -1,3 +1,5 @@
+import { EventListenerCallbackMap } from './audioEvents.types';
+
 export type InitMode = 'REACT' | 'VANILLA';
 export type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
 export type Preload = 'none' | 'metadata' | 'auto' | '';
@@ -25,12 +27,11 @@ export interface MediaTrack {
 }
 
 export interface AudioInit {
-  // mediaTrack: MediaTrack;
   mode: InitMode;
+  useDefaultEventListeners: boolean;
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;
-  useDefaultEventListeners: boolean;
-  attachAudioEventListeners?: boolean;
+  customEventListeners?: EventListenerCallbackMap | null;
   autoplay?: boolean;
 }
 
