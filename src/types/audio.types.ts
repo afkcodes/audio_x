@@ -29,11 +29,12 @@ export interface MediaTrack {
 export interface AudioInit {
   mode: InitMode;
   useDefaultEventListeners: boolean;
+  showNotificationActions?: boolean;
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;
   customEventListeners?: EventListenerCallbackMap | null;
   autoplay?: boolean;
-  showNotificationActions: boolean;
+  enablePlayLog?: boolean;
 }
 
 export interface AudioError {
@@ -51,4 +52,5 @@ export interface AudioState {
   playbackRate: PlaybackRate;
   error: AudioError;
   currentTrack: MediaTrack;
+  actualPlayedLength: number;
 }

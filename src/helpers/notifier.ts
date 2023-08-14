@@ -1,104 +1,101 @@
-import { isValidArray, isValidFunction, isValidObject } from './common';
-
-const listeners: any = {};
-export const notifierState: any = {};
+type ListenerCallback<T> = (data: T) => void;
 
 class ChangeNotifier {
-  /**
-   * this method notifies all the listener attached with the data received.
-   *
-   * @param eventName - Name of the event that the notifier has to notify.
-   * @param data - the data with which the notify method has been called, will notify all the listeners with this data.
-   * @param caller - caller is basically an identifier to know who has made the call to notify.
-   * @returns void
-   */
+  private static listeners: Record<string, Set<ListenerCallback<any>>> = {};
+  private static notifierState: Record<string, any> = {};
 
-  static notify(
+  private static validateEventName(eventName: string): void {
+    if (!eventName || typeof eventName !== 'string') {
+      throw new Error('Invalid event name');
+    }
+  }
+
+  static notify<T>(
     eventName: string,
-    data: any,
+    data: T,
     caller: string = 'audiox_notifier_default'
-  ) {
-    const listenerCbs = listeners[eventName];
+  ): void {
+    this.validateEventName(eventName);
+
+    const listenerCbs = ChangeNotifier.listeners[eventName];
 
     if (!listenerCbs) return;
 
-    if (isValidFunction(listenerCbs as Function) && data !== null) {
+    if (data !== null) {
       console.log(`NOTIFYING TO EVENT : ${eventName} - CALLER : ${caller}`);
 
-      /**
-       * checks if the data is object then updates the local
-       * state with the object destructure, if not then assign
-       * the value
-       */
+      ChangeNotifier.notifierState[eventName] = {
+        ...(ChangeNotifier.notifierState[eventName] || {}),
+        ...data
+      };
 
-      if (isValidObject(data)) {
-        notifierState[eventName] = { ...notifierState[eventName], ...data };
-      } else {
-        notifierState[eventName] = data;
-      }
-      listenerCbs(notifierState[eventName]);
-    }
-
-    if (isValidArray(Array.from(listenerCbs) as Function[]) && data !== null) {
-      if (isValidObject(data)) {
-        notifierState[eventName] = { ...notifierState[eventName], ...data };
-      } else {
-        notifierState[eventName] = data;
-      }
-      listenerCbs.forEach((cb: Function) => {
-        cb(notifierState[eventName]);
+      listenerCbs.forEach((cb: ListenerCallback<any>) => {
+        cb(ChangeNotifier.notifierState[eventName]);
       });
     }
   }
 
-  /**
-   * this method registers a listeners to an event name which it will listen to,
-   * works in conjunction with notify method.
-   *
-   * @param eventName - name of the event for which it will listen to changes
-   * @param callback - any callback that needs to be called once the event is fired
-   * @param state - default state for each event to which it listens to
-   * @returns - a method that unsubscribe the events and basically deletes it
-   */
+  static listen<T>(
+    eventName: string,
+    callback: ListenerCallback<T>,
+    state = {}
+  ): () => void {
+    this.validateEventName(eventName);
 
-  static listen(eventName: string, callback: Function, state = {}) {
-    if (!listeners[eventName] && isValidFunction(callback)) {
-      if (!notifierState[eventName]) {
-        notifierState[eventName] = state;
-      }
-      listeners[eventName] = new Set().add(callback);
-    } else {
-      let callbackArr: any = [...listeners[eventName]];
-      listeners[eventName].forEach(() => {
-        callbackArr.push(callback);
-      });
-      listeners[eventName] = new Set(callbackArr);
+    if (typeof callback !== 'function') {
+      throw new Error('Callback must be a function');
     }
 
-    /**
-     * below we are returning the a function that would allow us to remove the listener,
-     * which takes two parameters
-     *
-     * @param caller - identifier name who has made the call to unsubscribe.
-     * @param resetState - a boolean flag which allow if the state needs to be destroyed when the listener is removed.
-     */
+    if (!ChangeNotifier.listeners[eventName]) {
+      ChangeNotifier.notifierState[eventName] = state;
+      ChangeNotifier.listeners[eventName] = new Set([callback]);
+    } else {
+      ChangeNotifier.listeners[eventName].add(callback);
+    }
 
-    return (caller: string, resetState: boolean) => {
-      if (listeners[eventName]) {
-        console.log(
-          `REMOVING EVENT LISTENER FOR EVENT : ${eventName} - CALLER : ${caller}`
-        );
-        delete listeners[eventName];
-        if (resetState && notifierState[eventName]) {
-          console.log(
-            `RESETTING STATE FOR EVENT : ${eventName} - CALLER : ${caller}`
-          );
-          delete notifierState[eventName];
-        }
-      } else {
+    return (): void => {
+      const eventListeners = ChangeNotifier.listeners[eventName];
+
+      if (!eventListeners) {
         console.log(`EVENT NOT FOUND : ${eventName}`);
+        return;
+      }
+
+      console.log(`REMOVING EVENT LISTENER FOR EVENT : ${eventName}`);
+
+      eventListeners.delete(callback);
+
+      if (eventListeners.size === 0) {
+        delete ChangeNotifier.listeners[eventName];
       }
     };
+  }
+
+  static multiListen<T>(
+    eventName: string,
+    callbacks: ListenerCallback<T>[],
+    state = {}
+  ): () => void {
+    this.validateEventName(eventName);
+
+    if (!Array.isArray(callbacks) || callbacks.length === 0) {
+      throw new Error('Callbacks must be a non-empty array of functions');
+    }
+
+    const unsubscribeFunctions = callbacks.map((callback) =>
+      ChangeNotifier.listen(eventName, callback, state)
+    );
+
+    return (): void => {
+      unsubscribeFunctions.forEach((unsubscribe) => unsubscribe());
+    };
+  }
+
+  // Retrieve the latest state data for a specific event
+  static getLatestState<T>(eventName: string): T | undefined {
+    this.validateEventName(eventName);
+
+    return ChangeNotifier.notifierState[eventName];
   }
 }
 

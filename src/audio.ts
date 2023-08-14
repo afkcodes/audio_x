@@ -4,14 +4,16 @@ import {
   attachCustomEventListeners,
   attachDefaultEventListeners
 } from 'events/listeners';
+import { calculateActualPlayedLength } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 import {
   attachMediaSessionHandlers,
-  updateMetaData
+  updateMetaData,
+  updatePositionState
 } from 'mediasession/mediasessionHandler';
 import { AUDIO_STATE, READY_STATE } from 'states/audioState';
-import { EventListenersList, MediaTrack, PlaybackRate } from 'types';
-import { AudioInit } from 'types/audio.types';
+import { EventListenersList } from 'types';
+import { AudioInit, MediaTrack, PlaybackRate } from 'types/audio.types';
 
 let audioInstance: HTMLAudioElement;
 const notifier = ChangeNotifier;
@@ -65,7 +67,8 @@ class AudioX {
       autoplay = false,
       useDefaultEventListeners = true,
       customEventListeners = null,
-      showNotificationActions = false
+      showNotificationActions = false,
+      enablePlayLog = false
     } = initProps;
 
     this._audio?.setAttribute('id', 'audio_x_instance');
@@ -74,11 +77,12 @@ class AudioX {
     audioInstance = this._audio;
 
     if (useDefaultEventListeners || customEventListeners == null) {
-      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP);
+      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
     }
 
     if (showNotificationActions) {
       attachMediaSessionHandlers();
+      updatePositionState();
     }
   }
 
@@ -195,13 +199,17 @@ class AudioX {
     }
   }
 
-  subscribe(eventName: string, callback: Function = () => {}, state: any = {}) {
+  subscribe(eventName: string, callback: (data: any) => void, state: any = {}) {
     const unsubscribe = notifier.listen(eventName, callback, state);
     return unsubscribe;
   }
 
   attachEventListeners(eventListenersList: EventListenersList) {
     attachCustomEventListeners(eventListenersList);
+  }
+
+  enablePlayLog() {
+    calculateActualPlayedLength(audioInstance);
   }
 
   get id() {

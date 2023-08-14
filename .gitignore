@@ -1,3 +1,4 @@
 node_modules
 yarn.lock
-packaage.lock.json
+package.lock.json
+dist/
