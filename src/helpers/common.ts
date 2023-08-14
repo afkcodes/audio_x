@@ -1,5 +1,6 @@
 import { ERROR_MSG_MAP } from 'constants/common';
 import { MediaTrack } from 'types';
+import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
 const isValidFunction = (fn: any) =>
@@ -59,6 +60,23 @@ const metaDataCreator = (mediaTrack: MediaTrack) => {
     artwork: artworkMap
   };
   return metaData;
+};
+
+export const calculateActualPlayedLength = (
+  audioInstance: HTMLAudioElement
+) => {
+  const lengthSet = new Set();
+  for (let i = 0; i < audioInstance.played.length; i++) {
+    const startX = audioInstance.played.start(i);
+    const endX = audioInstance.played.end(i);
+    const width = endX - startX;
+    lengthSet.add(width);
+  }
+  const lengthArr = [...lengthSet] as number[];
+  const playedLength = lengthArr.reduce((acc, val) => acc + val, 0);
+  ChangeNotifier.notify('AUDIO_STATE', {
+    actualPlayedLength: playedLength
+  });
 };
 
 export {

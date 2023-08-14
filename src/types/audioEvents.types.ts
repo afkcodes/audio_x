@@ -34,6 +34,7 @@ export type EventListenersList =
 export type EventListenerCallbackMap = {
   [key in keyof Partial<AudioEvents>]: (
     e: Event,
-    audioInstance: HTMLAudioElement
+    audioInstance: HTMLAudioElement,
+    playLogEnabled: boolean
   ) => void;
 };
