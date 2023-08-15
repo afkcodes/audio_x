@@ -18,7 +18,6 @@ export const attachMediaSessionHandlers = () => {
     });
     navigator.mediaSession.setActionHandler('pause', () => {
       const audioInstance = AudioX.getAudioInstance();
-
       audioInstance.pause();
     });
   }
@@ -26,10 +25,12 @@ export const attachMediaSessionHandlers = () => {
 
 export const updatePositionState = () => {
   ChangeNotifier.listen('AUDIO_X_STATE', (data: AudioState) => {
-    navigator.mediaSession.setPositionState({
-      duration: data.duration,
-      playbackRate: data.playbackRate,
-      position: data.progress
-    });
+    if (data?.duration && data?.playbackRate && data?.progress) {
+      navigator.mediaSession.setPositionState({
+        duration: data.duration,
+        playbackRate: data.playbackRate,
+        position: data.progress
+      });
+    }
   });
 };

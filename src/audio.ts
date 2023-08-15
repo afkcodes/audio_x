@@ -8,8 +8,7 @@ import { calculateActualPlayedLength } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 import {
   attachMediaSessionHandlers,
-  updateMetaData,
-  updatePositionState
+  updateMetaData
 } from 'mediasession/mediasessionHandler';
 import { AUDIO_STATE, READY_STATE } from 'states/audioState';
 import { EventListenersList } from 'types';
@@ -82,7 +81,6 @@ class AudioX {
 
     if (showNotificationActions) {
       attachMediaSessionHandlers();
-      updatePositionState();
     }
   }
 

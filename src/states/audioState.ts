@@ -24,7 +24,8 @@ export const AUDIO_STATE: AudioState = {
     readable: ''
   },
   currentTrack: {} as MediaTrack,
-  actualPlayedLength: 0
+  currentTrackPlayTime: 0,
+  previousTrackPlayTime: 0
 };
 
 /* Listen to state changes and update global audio state that is being exposed to outer world

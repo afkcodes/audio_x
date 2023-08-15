@@ -52,5 +52,6 @@ export interface AudioState {
   playbackRate: PlaybackRate;
   error: AudioError;
   currentTrack: MediaTrack;
-  actualPlayedLength: number;
+  currentTrackPlayTime: number;
+  previousTrackPlayTime: number;
 }

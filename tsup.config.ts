@@ -8,16 +8,19 @@ const config: Options = {
   clean: true,
   treeshake: true,
   target: 'es5',
-  // terserOptions: {
-  //   mangle: {
-  //     eval: true,
-  //     keep_classnames: false,
-  //     keep_fnames: false,
-  //   },
-  //   safari10: true,
-  //   ecma: 2015,
-  // },
-  format: ['iife', 'cjs', 'esm'],
+  esbuildOptions(options, context) {
+    options.drop = ['console', 'debugger'];
+  },
+  terserOptions: {
+    mangle: {
+      eval: true,
+      keep_classnames: false,
+      keep_fnames: false
+    },
+    safari10: true,
+    ecma: 2015
+  },
+  format: ['iife', 'cjs', 'esm']
 };
 
 export default config;
