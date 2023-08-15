@@ -9,8 +9,12 @@ import { ERROR_EVENTS } from './errorEvents';
 const notifier = ChangeNotifier;
 
 const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
-  LOADED_META_DATA: (e: Event, audioInstance: HTMLAudioElement) => {
-    console.log(e.type);
+  LOADED_META_DATA: (
+    e: Event,
+    audioInstance: HTMLAudioElement,
+    playLogEnabled
+  ) => {
+    console.log('STATUS', e.type);
     notifier.notify(
       'AUDIO_STATE',
       {
@@ -20,10 +24,13 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_state_${e.type}`
     );
+    if (playLogEnabled) {
+      calculateActualPlayedLength(audioInstance, 'PAUSE');
+    }
   },
 
-  CAN_PLAY: (e: Event) => {
-    console.log(e.type);
+  CAN_PLAY: (e: Event, audioInstance, playLogEnabled) => {
+    console.log('STATUS', e.type);
 
     notifier.notify(
       'AUDIO_STATE',
@@ -33,10 +40,13 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_${e.type}`
     );
+    if (playLogEnabled) {
+      calculateActualPlayedLength(audioInstance, 'PAUSE');
+    }
   },
 
-  CAN_PLAY_THROUGH: (e: Event) => {
-    console.log(e.type);
+  CAN_PLAY_THROUGH: (e: Event, audioInstance, playLogEnabled) => {
+    console.log('STATUS', e.type);
 
     notifier.notify(
       'AUDIO_STATE',
@@ -46,10 +56,13 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_${e.type}`
     );
+    if (playLogEnabled) {
+      calculateActualPlayedLength(audioInstance, 'PAUSE');
+    }
   },
 
   PLAY: (e: Event, audioInstance: HTMLAudioElement) => {
-    console.log(e.type);
+    console.log('STATUS', e.type);
     notifier.notify(
       'AUDIO_STATE',
       {
@@ -62,7 +75,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   },
 
   PAUSE: (e: Event, audioInstance: HTMLAudioElement, playLogEnabled) => {
-    console.log(e.type);
+    console.log('STATUS', e.type);
     notifier.notify(
       'AUDIO_STATE',
       {
@@ -73,12 +86,12 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       `audiox_baseEvents_state_${e.type}`
     );
     if (playLogEnabled) {
-      calculateActualPlayedLength(audioInstance);
+      calculateActualPlayedLength(audioInstance, 'PAUSE');
     }
   },
 
   ENDED: (e: Event, audioInstance: HTMLAudioElement, playLogEnabled) => {
-    console.log(e.type);
+    console.log('STATUS', e.type);
     notifier.notify(
       'AUDIO_STATE',
       {
@@ -89,12 +102,12 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       `audiox_baseEvents_state_${e.type}`
     );
     if (playLogEnabled) {
-      calculateActualPlayedLength(audioInstance);
+      calculateActualPlayedLength(audioInstance, 'ENDED');
     }
   },
 
   ERROR: (e: Event, audioInstance: HTMLAudioElement, playLogEnabled) => {
-    console.log(e.type);
+    console.log('STATUS', e.type);
     const errorCode = audioInstance.error?.code as keyof typeof ERROR_EVENTS;
     const message = getReadableErrorMessage(audioInstance);
     notifier.notify(
@@ -110,7 +123,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       `audiox_baseEvents_state_${e.type}`
     );
     if (playLogEnabled) {
-      calculateActualPlayedLength(audioInstance);
+      calculateActualPlayedLength(audioInstance, 'ERROR');
     }
   },
 
@@ -118,7 +131,9 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     notifier.notify(
       'AUDIO_STATE',
       {
-        playbackState: PLAYBACK_STATE.PLAYING,
+        playbackState: audioInstance.paused
+          ? PLAYBACK_STATE.IDLE
+          : PLAYBACK_STATE.PLAYING,
         progress: audioInstance?.currentTime,
         error: { code: null, message: '', readable: '' }
       },
@@ -127,7 +142,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   },
 
   WAITING: (e: Event, audioInstance: HTMLAudioElement) => {
-    console.log(e.type);
+    console.log('STATUS', e.type);
     notifier.notify(
       'AUDIO_STATE',
       {
@@ -140,7 +155,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   },
 
   VOLUME_CHANGE: (e: Event) => {
-    console.log(e.type);
+    console.log('STATUS', e.type);
     notifier.notify('AUDIO_STATE', {}, `audiox_baseEvents_state`);
   }
 };

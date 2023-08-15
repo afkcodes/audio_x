@@ -1,5 +1,5 @@
 import { ERROR_MSG_MAP } from 'constants/common';
-import { MediaTrack } from 'types';
+import { AudioEvents, MediaTrack } from 'types';
 import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
@@ -62,8 +62,10 @@ const metaDataCreator = (mediaTrack: MediaTrack) => {
   return metaData;
 };
 
+let previousTrackPlayTime = 0;
 export const calculateActualPlayedLength = (
-  audioInstance: HTMLAudioElement
+  audioInstance: HTMLAudioElement,
+  event?: keyof AudioEvents
 ) => {
   const lengthSet = new Set();
   for (let i = 0; i < audioInstance.played.length; i++) {
@@ -73,9 +75,12 @@ export const calculateActualPlayedLength = (
     lengthSet.add(width);
   }
   const lengthArr = [...lengthSet] as number[];
-  const playedLength = lengthArr.reduce((acc, val) => acc + val, 0);
+  const currentTrackPlayTime = lengthArr.reduce((acc, val) => acc + val, 0);
+  previousTrackPlayTime =
+    event === 'ENDED' ? currentTrackPlayTime : previousTrackPlayTime;
   ChangeNotifier.notify('AUDIO_STATE', {
-    actualPlayedLength: playedLength
+    currentTrackPlayTime,
+    previousTrackPlayTime
   });
 };
 
