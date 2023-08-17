@@ -21,6 +21,7 @@ export interface AudioEvents {
   PROGRESS: 'progress';
   LOAD_START: 'loadstart';
   ERROR: 'error';
+  TRACK_CHANGE: 'trackchange'; // this is a custom event added to support track change
 }
 
 export interface CustomAudioState {

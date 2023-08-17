@@ -23,8 +23,9 @@ export const AUDIO_EVENTS: AudioEvents = Object.freeze({
   PROGRESS: 'progress',
   LOAD_START: 'loadstart',
   ERROR: 'error',
+  TRACK_CHANGE: 'trackchange' // this is a custom event added to support track change
 });
 
 export const CUSTOM_AUDIO_EVENTS = Object.freeze({
-  AUDIO_X_STATE: 'AUDIO_X_STATE',
+  AUDIO_X_STATE: 'AUDIO_X_STATE'
 });

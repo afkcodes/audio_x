@@ -4,16 +4,12 @@ import {
   getReadableErrorMessage
 } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
-import { EventListenerCallbackMap } from 'types';
+import { AudioState, EventListenerCallbackMap } from 'types';
 import { ERROR_EVENTS } from './errorEvents';
 const notifier = ChangeNotifier;
 
 const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
-  LOADED_META_DATA: (
-    e: Event,
-    audioInstance: HTMLAudioElement,
-    playLogEnabled
-  ) => {
+  LOADED_META_DATA: (e: Event, audioInstance: HTMLAudioElement) => {
     console.log('STATUS', e.type);
     notifier.notify(
       'AUDIO_STATE',
@@ -24,12 +20,9 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_state_${e.type}`
     );
-    if (playLogEnabled) {
-      calculateActualPlayedLength(audioInstance, 'PAUSE');
-    }
   },
 
-  CAN_PLAY: (e: Event, audioInstance, playLogEnabled) => {
+  CAN_PLAY: (e: Event) => {
     console.log('STATUS', e.type);
 
     notifier.notify(
@@ -40,12 +33,9 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_${e.type}`
     );
-    if (playLogEnabled) {
-      calculateActualPlayedLength(audioInstance, 'PAUSE');
-    }
   },
 
-  CAN_PLAY_THROUGH: (e: Event, audioInstance, playLogEnabled) => {
+  CAN_PLAY_THROUGH: (e: Event) => {
     console.log('STATUS', e.type);
 
     notifier.notify(
@@ -56,9 +46,6 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_${e.type}`
     );
-    if (playLogEnabled) {
-      calculateActualPlayedLength(audioInstance, 'PAUSE');
-    }
   },
 
   PLAY: (e: Event, audioInstance: HTMLAudioElement) => {
@@ -106,14 +93,14 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     }
   },
 
-  ERROR: (e: Event, audioInstance: HTMLAudioElement, playLogEnabled) => {
+  ERROR: (e: Event, audioInstance: HTMLAudioElement) => {
     console.log('STATUS', e.type);
     const errorCode = audioInstance.error?.code as keyof typeof ERROR_EVENTS;
     const message = getReadableErrorMessage(audioInstance);
     notifier.notify(
       'AUDIO_STATE',
       {
-        playbackState: PLAYBACK_STATE.PAUSED,
+        playbackState: PLAYBACK_STATE.ERROR,
         error: {
           code: errorCode,
           message: ERROR_EVENTS[errorCode],
@@ -122,17 +109,18 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_${e.type}`
     );
-    if (playLogEnabled) {
-      calculateActualPlayedLength(audioInstance, 'ERROR');
-    }
   },
 
   TIME_UPDATE: (e: Event, audioInstance: HTMLAudioElement) => {
+    console.log('STATUS', e.type);
+    const audioState = ChangeNotifier.getLatestState(
+      'AUDIO_X_STATE'
+    ) as AudioState;
     notifier.notify(
       'AUDIO_STATE',
       {
         playbackState: audioInstance.paused
-          ? PLAYBACK_STATE.IDLE
+          ? audioState.playbackState
           : PLAYBACK_STATE.PLAYING,
         progress: audioInstance?.currentTime,
         error: { code: null, message: '', readable: '' }
