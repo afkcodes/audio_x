@@ -76,8 +76,12 @@ export const calculateActualPlayedLength = (
   }
   const lengthArr = [...lengthSet] as number[];
   const currentTrackPlayTime = lengthArr.reduce((acc, val) => acc + val, 0);
-  previousTrackPlayTime =
-    event === 'ENDED' ? currentTrackPlayTime : previousTrackPlayTime;
+
+  previousTrackPlayTime = ['ENDED', 'TRACK_CHANGE', 'PAUSE'].includes(
+    event as keyof AudioEvents
+  )
+    ? currentTrackPlayTime
+    : previousTrackPlayTime;
   ChangeNotifier.notify('AUDIO_STATE', {
     currentTrackPlayTime,
     previousTrackPlayTime

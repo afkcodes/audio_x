@@ -1,4 +1,4 @@
-import { AUDIO_X_CONSTANTS } from 'constants/common';
+import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import {
   attachCustomEventListeners,
@@ -10,7 +10,7 @@ import {
   attachMediaSessionHandlers,
   updateMetaData
 } from 'mediasession/mediasessionHandler';
-import { AUDIO_STATE, READY_STATE } from 'states/audioState';
+import { READY_STATE } from 'states/audioState';
 import { EventListenersList } from 'types';
 import { AudioInit, MediaTrack, PlaybackRate } from 'types/audio.types';
 
@@ -19,6 +19,7 @@ const notifier = ChangeNotifier;
 
 class AudioX {
   private _audio: HTMLAudioElement;
+  private isPlayLogEnabled: Boolean;
   private static _instance: AudioX;
 
   constructor() {
@@ -73,6 +74,7 @@ class AudioX {
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
     this._audio.autoplay = autoplay;
+    this.isPlayLogEnabled = enablePlayLog;
     audioInstance = this._audio;
 
     if (useDefaultEventListeners || customEventListeners == null) {
@@ -85,10 +87,14 @@ class AudioX {
   }
 
   async addMedia(mediaTrack: MediaTrack) {
+    if (this.isPlayLogEnabled) {
+      calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
+    }
     if (mediaTrack) {
       audioInstance.src = mediaTrack.source;
       notifier.notify('AUDIO_STATE', {
-        ...AUDIO_STATE,
+        playbackState: PLAYBACK_STATE.TRACK_CHANGE,
+        currentTrackPlayTime: 0,
         currentTrack: mediaTrack
       });
       updateMetaData(mediaTrack);
@@ -159,7 +165,6 @@ class AudioX {
     if (audioInstance) {
       audioInstance.volume = actualVolume;
       notifier.notify('AUDIO_STATE', {
-        ...AUDIO_STATE,
         volume: volume
       });
     }
@@ -171,7 +176,6 @@ class AudioX {
     if (audioInstance) {
       audioInstance.playbackRate = playbackRate;
       notifier.notify('AUDIO_STATE', {
-        ...AUDIO_STATE,
         playbackRate
       });
     }
@@ -204,10 +208,6 @@ class AudioX {
 
   attachEventListeners(eventListenersList: EventListenersList) {
     attachCustomEventListeners(eventListenersList);
-  }
-
-  enablePlayLog() {
-    calculateActualPlayedLength(audioInstance);
   }
 
   get id() {
