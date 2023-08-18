@@ -6,6 +6,7 @@ import { AudioState } from 'types';
 export const updateMetaData = (data: any) => {
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata(metaDataCreator(data));
+    updatePositionState();
   }
 };
 
@@ -24,13 +25,16 @@ export const attachMediaSessionHandlers = () => {
 };
 
 export const updatePositionState = () => {
-  ChangeNotifier.listen('AUDIO_X_STATE', (data: AudioState) => {
-    if (data?.duration && data?.playbackRate && data?.progress) {
-      navigator.mediaSession.setPositionState({
-        duration: data.duration,
-        playbackRate: data.playbackRate,
-        position: data.progress
-      });
-    }
-  });
+  if ('setPositionState' in navigator.mediaSession) {
+    const audioState = ChangeNotifier.getLatestState(
+      'AUDIO_X_STATE'
+    ) as AudioState;
+    const { currentTime, duration } = AudioX.getAudioInstance();
+
+    navigator.mediaSession.setPositionState({
+      duration: duration,
+      playbackRate: audioState.playbackRate,
+      position: currentTime
+    });
+  }
 };

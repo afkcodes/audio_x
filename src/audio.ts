@@ -97,7 +97,7 @@ class AudioX {
         currentTrackPlayTime: 0,
         currentTrack: mediaTrack
       });
-      updateMetaData(mediaTrack);
+
       audioInstance.load();
     }
   }
@@ -126,7 +126,9 @@ class AudioX {
       this.addMedia(mediaTrack).then(() => {
         if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
           setTimeout(async () => {
-            await this.play();
+            await this.play().then(() => {
+              updateMetaData(mediaTrack);
+            });
           }, 950);
         }
       });
