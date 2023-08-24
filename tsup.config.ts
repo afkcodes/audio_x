@@ -20,7 +20,7 @@ const config: Options = {
     safari10: true,
     ecma: 2015
   },
-  format: ['iife', 'cjs', 'esm']
+  format: ['cjs', 'esm']
 };
 
 export default config;
