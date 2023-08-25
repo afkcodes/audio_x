@@ -8,7 +8,7 @@ import {
 } from 'events/listeners';
 import { calculateActualPlayedLength } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
-import Hls from 'hls.js';
+import Hls from 'libs/hls/hls.js';
 
 import {
   attachMediaSessionHandlers,
