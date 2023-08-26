@@ -104,6 +104,7 @@ class AudioX {
     }
     if (mediaTrack && hlsInstance) {
       if (mediaType === 'HLS') {
+        hlsInstance.detachMedia();
         hls.addHlsMedia(mediaTrack);
       } else {
         audioInstance.src = mediaTrack.source;
@@ -125,7 +126,14 @@ class AudioX {
       audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA &&
       isSourceAvailable
     ) {
-      await audioInstance.play();
+      await audioInstance
+        .play()
+        .then(() => {
+          console.log('PLAYING');
+        })
+        .catch(() => {
+          console.warn('cancelling current audio playback, track changed');
+        });
     }
   }
 
@@ -138,14 +146,18 @@ class AudioX {
    */
 
   async addMediaAndPlay(mediaTrack: MediaTrack) {
-    if (mediaTrack) {
-      this.addMedia(mediaTrack).then(() => {
-        if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
-          setTimeout(async () => {
-            await this.play();
-          }, 950);
-        }
-      });
+    try {
+      if (mediaTrack) {
+        this.addMedia(mediaTrack).then(() => {
+          if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
+            setTimeout(async () => {
+              await this.play();
+            }, 950);
+          }
+        });
+      }
+    } catch (error) {
+      console.log('PLAYBACK FAILED');
     }
   }
 
