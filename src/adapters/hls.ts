@@ -38,6 +38,7 @@ class HlsAdapter {
     )
       .then(() => {
         this.HlsClass = window.Hls;
+        window.Hls = undefined;
       })
       .catch((msg: string) => {
         console.log(msg);
