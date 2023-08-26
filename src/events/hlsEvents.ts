@@ -22,6 +22,7 @@ export const HLS_EVENTS_CALLBACK_MAP: HlsEventsCallbackMap = {
       `audiox_baseEvents_state_${e.type}`
     );
   },
+
   FRAG_CHANGED: () => {
     console.log('FRAG_CHANGED');
   }

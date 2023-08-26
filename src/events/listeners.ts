@@ -1,7 +1,7 @@
+import HlsAdapter from 'adapters/hls';
 import { AudioX } from 'audio';
 import { isValidArray } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
-import { HlsListeners } from 'hls.js';
 import {
   AudioEvents,
   EventListenerCallbackMap,
@@ -9,6 +9,7 @@ import {
   HlsEvents,
   HlsEventsCallbackMap
 } from 'types/audioEvents.types';
+import { HlsListeners } from '../libs/hls/hls.js';
 import { AUDIO_EVENTS, HLS_EVENTS } from './audioEvents';
 
 /**
@@ -59,7 +60,8 @@ const attachHlsEventsListeners = (
   hlsEventlistenerCallbackMap: HlsEventsCallbackMap,
   playLogEnabled: boolean = false
 ) => {
-  const hlsInstance = AudioX.getHlsInstance();
+  const hls = new HlsAdapter();
+  const hlsInstance = hls.getHlsInstance();
   isValidArray(Object.keys(hlsEventlistenerCallbackMap)) &&
     Object.keys(hlsEventlistenerCallbackMap).forEach((evt) => {
       let event = evt as keyof HlsEvents;

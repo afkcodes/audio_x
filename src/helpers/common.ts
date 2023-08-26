@@ -88,11 +88,34 @@ export const calculateActualPlayedLength = (
   });
 };
 
+const loadScript = (
+  url: string,
+  onLoad: () => void,
+  name?: string
+): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    if (window instanceof Window && window.document) {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+      script.async = true;
+      script.onload = () => {
+        onLoad();
+        resolve();
+      };
+      document.head.appendChild(script);
+    } else {
+      reject(`Window not ready unable to initialize ${name}`);
+    }
+  });
+};
+
 export {
   getReadableErrorMessage,
   isValidArray,
   isValidFunction,
   isValidObject,
   isValidWindow,
+  loadScript,
   metaDataCreator
 };

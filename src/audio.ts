@@ -1,14 +1,12 @@
+import HlsAdapter from 'adapters/hls';
 import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
-import { HLS_EVENTS_CALLBACK_MAP } from 'events/hlsEvents';
 import {
   attachCustomEventListeners,
-  attachDefaultEventListeners,
-  attachHlsEventsListeners
+  attachDefaultEventListeners
 } from 'events/listeners';
 import { calculateActualPlayedLength } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
-import Hls from 'libs/hls/hls.js';
 
 import {
   attachMediaSessionHandlers,
@@ -19,7 +17,6 @@ import { EventListenersList } from 'types';
 import { AudioInit, MediaTrack, PlaybackRate } from 'types/audio.types';
 
 let audioInstance: HTMLAudioElement;
-let hlsInstance: Hls;
 const notifier = ChangeNotifier;
 
 class AudioX {
@@ -91,35 +88,24 @@ class AudioX {
       attachMediaSessionHandlers();
     }
 
-    if (enableHls && Hls.isSupported()) {
-      let hls = new Hls();
-      hlsInstance = hls;
-      attachHlsEventsListeners(HLS_EVENTS_CALLBACK_MAP, enablePlayLog);
+    if (enableHls) {
+      const hls = new HlsAdapter();
+      hls.init({}, enablePlayLog);
     }
-  }
-
-  addHlsMedia(mediaTrack: MediaTrack) {
-    hlsInstance.attachMedia(audioInstance);
-    hlsInstance.on(Hls.Events.MEDIA_ATTACHED, function () {
-      hlsInstance.loadSource(mediaTrack.source);
-      console.log('hls media attached');
-    });
   }
 
   async addMedia(mediaTrack: MediaTrack) {
     const mediaType = mediaTrack.source.includes('.m3u8') ? 'HLS' : 'DEFAULT';
+    const hls = new HlsAdapter();
+    const hlsInstance = hls.getHlsInstance();
+
     if (this.isPlayLogEnabled) {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
-    if (mediaTrack) {
-      if (mediaType === 'HLS' && hlsInstance) {
-        this.addHlsMedia(mediaTrack);
+    if (mediaTrack && hlsInstance) {
+      if (mediaType === 'HLS') {
+        hls.addHlsMedia(mediaTrack);
       } else {
-        if (mediaType === 'HLS') {
-          console.error(
-            'supplied source seems to be a hls, but hls playback is not enabled'
-          );
-        }
         audioInstance.src = mediaTrack.source;
       }
       notifier.notify('AUDIO_STATE', {
@@ -246,10 +232,6 @@ class AudioX {
 
   static getAudioInstance() {
     return audioInstance;
-  }
-
-  static getHlsInstance() {
-    return hlsInstance;
   }
 }
 
