@@ -71,7 +71,8 @@ class AudioX {
       customEventListeners = null,
       showNotificationActions = false,
       enablePlayLog = false,
-      enableHls = true
+      enableHls = false,
+      hlsConfig = {}
     } = initProps;
 
     this._audio?.setAttribute('id', 'audio_x_instance');
@@ -90,33 +91,45 @@ class AudioX {
 
     if (enableHls) {
       const hls = new HlsAdapter();
-      hls.init({}, enablePlayLog);
+      hls.init(hlsConfig, enablePlayLog);
     }
   }
 
   async addMedia(mediaTrack: MediaTrack) {
+    if (!mediaTrack) {
+      return;
+    }
+
     const mediaType = mediaTrack.source.includes('.m3u8') ? 'HLS' : 'DEFAULT';
-    const hls = new HlsAdapter();
-    const hlsInstance = hls.getHlsInstance();
 
     if (this.isPlayLogEnabled) {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
-    if (mediaTrack && hlsInstance) {
-      if (mediaType === 'HLS') {
+
+    if (mediaType === 'HLS') {
+      const hls = new HlsAdapter();
+      const hlsInstance = hls.getHlsInstance();
+      if (hlsInstance) {
         hlsInstance.detachMedia();
         hls.addHlsMedia(mediaTrack);
       } else {
-        audioInstance.src = mediaTrack.source;
+        console.warn(
+          'The source provided seems to be a HLS stream but, hls playback is not enabled. Please have a look at init method of AudioX'
+        );
+        await this.reset();
       }
-      notifier.notify('AUDIO_STATE', {
-        playbackState: PLAYBACK_STATE.TRACK_CHANGE,
-        currentTrackPlayTime: 0,
-        currentTrack: mediaTrack
-      });
-      updateMetaData(mediaTrack);
-      audioInstance.load();
+    } else {
+      audioInstance.src = mediaTrack.source;
     }
+
+    notifier.notify('AUDIO_STATE', {
+      playbackState: PLAYBACK_STATE.TRACK_CHANGE,
+      currentTrackPlayTime: 0,
+      currentTrack: mediaTrack
+    });
+
+    updateMetaData(mediaTrack);
+    audioInstance.load();
   }
 
   async play() {
