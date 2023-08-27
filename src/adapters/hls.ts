@@ -9,8 +9,9 @@ import { URLS } from 'constants/common';
 import { HLS_EVENTS_CALLBACK_MAP } from 'events/hlsEvents';
 import { attachHlsEventsListeners } from 'events/listeners';
 import { loadScript } from 'helpers/common';
-import type Hls from 'libs/hls/hls.js';
 import { MediaTrack } from 'types';
+import type Hls from 'types/hls.js.js';
+import type { HlsConfig } from 'types/hls.js.js';
 
 let hlsInstance: Hls;
 
@@ -47,10 +48,10 @@ class HlsAdapter {
     return this.HlsClass;
   }
 
-  async init(options: any = {}, enablePlayLog: boolean) {
+  async init(config: HlsConfig | {} = {}, enablePlayLog: boolean) {
     const Hls = await this.load();
     if (Hls.isSupported()) {
-      hlsInstance = new Hls(options);
+      hlsInstance = new Hls(config);
       attachHlsEventsListeners(HLS_EVENTS_CALLBACK_MAP, enablePlayLog);
     }
   }

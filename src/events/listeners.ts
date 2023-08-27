@@ -9,7 +9,7 @@ import {
   HlsEvents,
   HlsEventsCallbackMap
 } from 'types/audioEvents.types';
-import { HlsListeners } from '../libs/hls/hls.js';
+import { HlsListeners } from '../types/hls.js.js';
 import { AUDIO_EVENTS, HLS_EVENTS } from './audioEvents';
 
 /**

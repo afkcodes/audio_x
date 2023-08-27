@@ -1,4 +1,4 @@
-import Hls from '../libs/hls/hls.js';
+import Hls from './hls.js.js';
 
 export interface AudioEvents {
   ABORT: 'abort';
