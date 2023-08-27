@@ -28,4 +28,8 @@ const ERROR_MSG_MAP: ErrorMessageMap = Object.freeze({
   DEFAULT: 'An unknown error occurred.'
 });
 
-export { AUDIO_X_CONSTANTS, ERROR_MSG_MAP, PLAYBACK_STATE };
+const URLS = {
+  HLS: 'https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js'
+};
+
+export { AUDIO_X_CONSTANTS, ERROR_MSG_MAP, PLAYBACK_STATE, URLS };

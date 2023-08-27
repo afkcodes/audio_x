@@ -35,6 +35,7 @@ export interface AudioInit {
   customEventListeners?: EventListenerCallbackMap | null;
   autoplay?: boolean;
   enablePlayLog?: boolean;
+  enableHls?: boolean;
 }
 
 export interface AudioError {

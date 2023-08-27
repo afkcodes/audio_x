@@ -1,3 +1,4 @@
+import HlsAdapter from 'adapters/hls';
 import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import {
@@ -6,6 +7,7 @@ import {
 } from 'events/listeners';
 import { calculateActualPlayedLength } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
+
 import {
   attachMediaSessionHandlers,
   updateMetaData
@@ -68,7 +70,8 @@ class AudioX {
       useDefaultEventListeners = true,
       customEventListeners = null,
       showNotificationActions = false,
-      enablePlayLog = false
+      enablePlayLog = false,
+      enableHls = true
     } = initProps;
 
     this._audio?.setAttribute('id', 'audio_x_instance');
@@ -84,14 +87,28 @@ class AudioX {
     if (showNotificationActions) {
       attachMediaSessionHandlers();
     }
+
+    if (enableHls) {
+      const hls = new HlsAdapter();
+      hls.init({}, enablePlayLog);
+    }
   }
 
   async addMedia(mediaTrack: MediaTrack) {
+    const mediaType = mediaTrack.source.includes('.m3u8') ? 'HLS' : 'DEFAULT';
+    const hls = new HlsAdapter();
+    const hlsInstance = hls.getHlsInstance();
+
     if (this.isPlayLogEnabled) {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
-    if (mediaTrack) {
-      audioInstance.src = mediaTrack.source;
+    if (mediaTrack && hlsInstance) {
+      if (mediaType === 'HLS') {
+        hlsInstance.detachMedia();
+        hls.addHlsMedia(mediaTrack);
+      } else {
+        audioInstance.src = mediaTrack.source;
+      }
       notifier.notify('AUDIO_STATE', {
         playbackState: PLAYBACK_STATE.TRACK_CHANGE,
         currentTrackPlayTime: 0,
@@ -109,7 +126,14 @@ class AudioX {
       audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA &&
       isSourceAvailable
     ) {
-      await audioInstance.play();
+      await audioInstance
+        .play()
+        .then(() => {
+          console.log('PLAYING');
+        })
+        .catch(() => {
+          console.warn('cancelling current audio playback, track changed');
+        });
     }
   }
 
@@ -122,14 +146,18 @@ class AudioX {
    */
 
   async addMediaAndPlay(mediaTrack: MediaTrack) {
-    if (mediaTrack) {
-      this.addMedia(mediaTrack).then(() => {
-        if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
-          setTimeout(async () => {
-            await this.play();
-          }, 950);
-        }
-      });
+    try {
+      if (mediaTrack) {
+        this.addMedia(mediaTrack).then(() => {
+          if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
+            setTimeout(async () => {
+              await this.play();
+            }, 950);
+          }
+        });
+      }
+    } catch (error) {
+      console.log('PLAYBACK FAILED');
     }
   }
 
@@ -212,13 +240,6 @@ class AudioX {
 
   get id() {
     return audioInstance?.getAttribute('id');
-  }
-
-  set media(media: MediaTrack) {
-    if (audioInstance) {
-      audioInstance.src = media?.source;
-    }
-    // TODO: implementation metadata
   }
 
   static getAudioInstance() {

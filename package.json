@@ -19,6 +19,5 @@
     "terser": "^5.19.2",
     "tsup": "^7.1.0",
     "typescript": "^5.1.6"
-  },
-  "dependencies": {}
+  }
 }
