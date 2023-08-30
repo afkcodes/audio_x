@@ -52,7 +52,7 @@ Soon i will be publishing it to npm.
 > that might be breaking, but be assured i will try not to make them.
 
 ```
-npm install "afkcodes/audio_x/try"
+npm install "afkcodes/audio_x#try"
 ```
 
 ### Usage
