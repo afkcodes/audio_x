@@ -66,7 +66,7 @@ class AudioX {
   async init(initProps: AudioInit) {
     const {
       preloadStrategy = 'auto',
-      autoplay = false,
+      autoPlay = false,
       useDefaultEventListeners = true,
       customEventListeners = null,
       showNotificationActions = false,
@@ -77,7 +77,7 @@ class AudioX {
 
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
-    this._audio.autoplay = autoplay;
+    this._audio.autoplay = autoPlay;
     this.isPlayLogEnabled = enablePlayLog;
     audioInstance = this._audio;
 
