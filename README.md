@@ -2,7 +2,7 @@
 
 ---
 
-A simple audio player for all you audio playing needs, based on HTML5 audio element.Supports
+A simple audio player for all your audio playing needs, based on HTML5 audio element.Supports
 most popular formats.
 
 | Formats | Support |
@@ -100,7 +100,7 @@ const track:MediaTrack ={
 };
 
 // add a track
-audio.add(track);
+audio.addMedia(track);
 
 // play
 audio.play();
