@@ -34,7 +34,7 @@ export interface AudioInit {
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;
   customEventListeners?: EventListenerCallbackMap | null;
-  autoplay?: boolean;
+  autoPlay?: boolean;
   enablePlayLog?: boolean;
   enableHls?: boolean;
   hlsConfig?: HlsConfig | {};
