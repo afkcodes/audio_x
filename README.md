@@ -46,10 +46,10 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 ---
 
 Currently there is no npm package so you have to install directly from github.
-Soon i will be publishing it to npm.
+Will be publishied to npm soon.
 
 > Note: This library is in active development phase so, there might be some changes that would come,
-> that might be breaking, but be assured i will try not to make them.
+> that might be breaking, but be assured will try not to make them.
 
 ```
 npm install "afkcodes/audio_x#try"
