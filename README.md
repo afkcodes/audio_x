@@ -10,7 +10,7 @@ most popular formats.
 | .mp3    | [✓]     |
 | .aac    | [✓]     |
 | .mp4    | [✓]     |
-| .hls    | [✓]     |
+| .m3u8 (hls)    | [✓]     |
 
 For a comprehensive list of formats support visit [MDN audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs)
 
