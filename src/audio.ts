@@ -40,6 +40,7 @@ class AudioX {
 
     AudioX._instance = this;
     this._audio = new Audio();
+    audioInstance = this._audio;
   }
 
   /**
@@ -72,14 +73,15 @@ class AudioX {
       showNotificationActions = false,
       enablePlayLog = false,
       enableHls = false,
+      crossOrigin = 'anonymous',
       hlsConfig = {}
     } = initProps;
 
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
     this._audio.autoplay = autoPlay;
+    this._audio.crossOrigin = crossOrigin;
     this.isPlayLogEnabled = enablePlayLog;
-    audioInstance = this._audio;
 
     if (useDefaultEventListeners || customEventListeners == null) {
       attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
