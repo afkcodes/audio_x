@@ -1,4 +1,4 @@
-import { HlsConfig } from 'libs/hls/hls.js';
+import { HlsConfig } from 'types/hls.js';
 import { EventListenerCallbackMap } from './audioEvents.types';
 
 export type InitMode = 'REACT' | 'VANILLA';
@@ -37,6 +37,7 @@ export interface AudioInit {
   autoPlay?: boolean;
   enablePlayLog?: boolean;
   enableHls?: boolean;
+  enableEQ?: boolean;
   crossOrigin?: string;
   hlsConfig?: HlsConfig | {};
 }
