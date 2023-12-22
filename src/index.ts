@@ -19,7 +19,6 @@ import type {
   PlayBackState,
   PlaybackRate,
   Preset,
-  PresetsMeta,
   ReadyState
 } from 'types';
 
@@ -44,6 +43,5 @@ export {
   PlayBackState,
   PlaybackRate,
   Preset,
-  PresetsMeta,
   ReadyState
 };

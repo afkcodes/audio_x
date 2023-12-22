@@ -284,6 +284,10 @@ class AudioX {
     this.eqInstance.setPreset(id);
   }
 
+  setCustomEQ(gains: number[]) {
+    this.eqInstance.setCustomEQ(gains);
+  }
+
   get id() {
     return audioInstance?.getAttribute('id');
   }

@@ -10,5 +10,4 @@ export interface Preset {
   gains: number[];
 }
 
-export type PresetsMeta = Omit<Preset, 'gains'>;
 export type EqualizerStatus = 'ACTIVE' | 'FAILED' | 'IDEAL';

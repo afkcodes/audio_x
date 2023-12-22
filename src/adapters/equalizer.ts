@@ -1,6 +1,6 @@
 import { AudioX } from 'audio';
 import { bands, presets } from 'constants/equalizer';
-import { getPresets } from 'helpers/common';
+import { isValidArray } from 'helpers/common';
 
 import { EqualizerStatus, Preset } from 'types/equalizer.types';
 
@@ -104,7 +104,6 @@ class Equalizer {
   }
 
   static getPreset() {
-    const presets = getPresets();
     return presets;
   }
 
@@ -113,6 +112,22 @@ class Equalizer {
       this.audioCtx.resume();
     }
     return this.audioCtxStatus;
+  }
+
+  getEqFilterBands() {
+    return {
+      dbUpperLimit: 10,
+      dbLowerLimit: -10,
+      bands: this.eqFilterBands
+    };
+  }
+
+  setCustomEQ(gains: number[]) {
+    if (isValidArray(gains)) {
+      this.eqFilterBands.forEach((band: BiquadFilterNode, index: number) => {
+        band.gain.value = gains[index];
+      });
+    }
   }
 }
 

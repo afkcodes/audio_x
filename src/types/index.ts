@@ -14,7 +14,7 @@ import {
   EventListenersList
 } from './audioEvents.types';
 import { ReadyState } from './audioState.types';
-import { Band, EqualizerStatus, Preset, PresetsMeta } from './equalizer.types';
+import { Band, EqualizerStatus, Preset } from './equalizer.types';
 import { ErrorEvents } from './errorEvents.types';
 import { NetworkState } from './networkState.types';
 
@@ -35,6 +35,5 @@ export type {
   PlaybackRate,
   PlayBackState,
   Preset,
-  PresetsMeta,
   ReadyState
 };

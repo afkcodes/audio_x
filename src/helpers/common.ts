@@ -1,7 +1,5 @@
 import { ERROR_MSG_MAP } from 'constants/common';
-import { presets } from 'constants/equalizer';
 import { AudioEvents, MediaTrack } from 'types';
-import { Preset, PresetsMeta } from 'types/equalizer.types';
 import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
@@ -117,15 +115,6 @@ const loadScript = (
       reject(`Window not ready unable to initialize ${name}`);
     }
   });
-};
-
-const getPresets = (): PresetsMeta[] => {
-  return presets.map((el: Preset) => {
-    return {
-      id: el.id,
-      name: el.name
-    };
-  }) as PresetsMeta[];
 };
 
 export {
