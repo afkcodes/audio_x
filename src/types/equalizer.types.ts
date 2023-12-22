@@ -5,7 +5,7 @@ export interface Band {
 }
 
 export interface Preset {
-  id: string;
+  id: string | number;
   name: string;
   gains: number[];
 }

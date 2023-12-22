@@ -59,26 +59,29 @@ class Equalizer {
     try {
       const audioInstance = AudioX.getAudioInstance();
       const audioSource = this.audioCtx.createMediaElementSource(audioInstance);
+
       const equalizerBands = bands.map((band) => {
         const filter = this.audioCtx.createBiquadFilter();
         filter.type = band.type;
         filter.frequency.value = band.frequency;
-        filter.gain.value = band.gain; // Set gain according to the frequency bands
-        filter.Q.value = 1; // Quality factor
+        filter.gain.value = band.gain;
+        filter.Q.value = 1;
         return filter;
       });
+
+      const gainNode = this.audioCtx.createGain();
+      gainNode.gain.value = 0.8; //Normalize sound output
+
       audioSource.connect(equalizerBands[0]);
 
       for (let i = 0; i < equalizerBands.length - 1; i++) {
         equalizerBands[i].connect(equalizerBands[i + 1]);
       }
 
-      equalizerBands[equalizerBands.length - 1].connect(
-        this.audioCtx.destination
-      );
+      equalizerBands[equalizerBands.length - 1].connect(gainNode);
+      gainNode.connect(this.audioCtx.destination);
 
       this.audioCtxStatus = 'ACTIVE';
-
       this.eqFilterBands = equalizerBands;
     } catch (error) {
       this.audioCtxStatus = 'FAILED';
@@ -87,6 +90,7 @@ class Equalizer {
 
   setPreset(id: keyof Preset) {
     const preset = presets.find((el) => el.id === id);
+    console.log({ preset });
     if (
       !this.eqFilterBands ||
       this.eqFilterBands.length !== preset?.gains.length
