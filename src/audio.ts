@@ -276,8 +276,8 @@ class AudioX {
     attachCustomEventListeners(eventListenersList);
   }
 
-  getPreset() {
-    return Equalizer.getPreset();
+  getPresets() {
+    return Equalizer.getPresets();
   }
 
   setPreset(id: keyof Preset) {

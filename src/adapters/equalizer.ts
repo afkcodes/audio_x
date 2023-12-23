@@ -103,7 +103,7 @@ class Equalizer {
     }
   }
 
-  static getPreset() {
+  static getPresets() {
     return presets;
   }
 
@@ -112,14 +112,6 @@ class Equalizer {
       this.audioCtx.resume();
     }
     return this.audioCtxStatus;
-  }
-
-  getEqFilterBands() {
-    return {
-      dbUpperLimit: 10,
-      dbLowerLimit: -10,
-      bands: this.eqFilterBands
-    };
   }
 
   setCustomEQ(gains: number[]) {
