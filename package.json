@@ -10,7 +10,16 @@
     "build": "tsup src/index.ts",
     "start": "npm run build -- --watch"
   },
-  "keywords": [],
+  "keywords": [
+    "npm",
+    "mediaelement",
+    "hls",
+    "audio",
+    "html audio",
+    "audio player",
+    "equalizer",
+    "web audio"
+  ],
   "author": "Ashish Kumar",
   "license": "ISC",
   "devDependencies": {
