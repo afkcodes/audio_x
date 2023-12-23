@@ -5,12 +5,12 @@
 A simple audio player for all your audio playing needs, based on HTML5 audio element.Supports
 most popular formats.
 
-| Formats | Support |
-| ------- | ------- |
-| .mp3    | [✓]     |
-| .aac    | [✓]     |
-| .mp4    | [✓]     |
-| .m3u8 (hls)    | [✓]     |
+| Formats     | Support |
+| ----------- | ------- |
+| .mp3        | [✓]     |
+| .aac        | [✓]     |
+| .mp4        | [✓]     |
+| .m3u8 (hls) | [✓]     |
 
 For a comprehensive list of formats support visit [MDN audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs)
 
@@ -35,7 +35,7 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 - Casting support
 - Dash media playback
 - DRM
-- Equalizer
+- ~~Equalizer~~ [✓] Done
 - Updates to APIs for better DX
 - React hooks to easily get started with React.
 - Ads Support
@@ -157,6 +157,43 @@ directly on the HTML5 audio element.
 
 ```
 const instance = AudioX.getAudioInstance();
+```
+
+### Setting up the equalizer
+
+---
+
+```
+// Getting the Presets
+const presets = audio.getPresets(); // will return array of pre-tuned filters
+
+// Sample Preset
+[
+  {
+    "id": "preset_default",
+    "name": "Default",
+    "gains": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+  }
+]
+
+// Setting a Preset
+audio.setPreset(id);
+
+// example:
+audio.setPreset('preset_default');  // will set default preset
+
+
+// Custom EQ Setting
+
+const gainsValue = preset[index].gains;
+gainsValue[index] = value;  // value ranges from -10 to 10
+audio.setCustomEQ(gainsValue);
+
+// Example
+const gainsValue = preset[0].gains;   // default preset gains [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+gainsValue[0] = 2.5;   // updated gain values [2.5, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+audio.setCustomEQ(gainsValue);
+
 ```
 
 ### Author
