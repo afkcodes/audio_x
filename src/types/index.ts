@@ -6,14 +6,15 @@ import {
   MediaArtwork,
   MediaTrack,
   PlaybackRate,
-  PlayBackState,
+  PlayBackState
 } from './audio.types';
 import {
   AudioEvents,
   EventListenerCallbackMap,
-  EventListenersList,
+  EventListenersList
 } from './audioEvents.types';
 import { ReadyState } from './audioState.types';
+import { Band, EqualizerStatus, Preset } from './equalizer.types';
 import { ErrorEvents } from './errorEvents.types';
 import { NetworkState } from './networkState.types';
 
@@ -22,6 +23,8 @@ export type {
   AudioEvents,
   AudioInit,
   AudioState,
+  Band,
+  EqualizerStatus,
   ErrorEvents,
   EventListenerCallbackMap,
   EventListenersList,
@@ -31,5 +34,6 @@ export type {
   NetworkState,
   PlaybackRate,
   PlayBackState,
-  ReadyState,
+  Preset,
+  ReadyState
 };

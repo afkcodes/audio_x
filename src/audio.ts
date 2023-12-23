@@ -1,3 +1,4 @@
+import { Equalizer } from 'adapters/equalizer';
 import HlsAdapter from 'adapters/hls';
 import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
@@ -15,6 +16,7 @@ import {
 import { READY_STATE } from 'states/audioState';
 import { EventListenersList } from 'types';
 import { AudioInit, MediaTrack, PlaybackRate } from 'types/audio.types';
+import { EqualizerStatus, Preset } from 'types/equalizer.types';
 
 let audioInstance: HTMLAudioElement;
 const notifier = ChangeNotifier;
@@ -23,6 +25,9 @@ class AudioX {
   private _audio: HTMLAudioElement;
   private isPlayLogEnabled: Boolean;
   private static _instance: AudioX;
+  private eqStatus: EqualizerStatus = 'IDEAL';
+  private isEqEnabled: boolean = false;
+  private eqInstance: Equalizer;
 
   constructor() {
     if (AudioX._instance) {
@@ -40,6 +45,7 @@ class AudioX {
 
     AudioX._instance = this;
     this._audio = new Audio();
+    audioInstance = this._audio;
   }
 
   /**
@@ -72,14 +78,16 @@ class AudioX {
       showNotificationActions = false,
       enablePlayLog = false,
       enableHls = false,
+      enableEQ = false,
+      crossOrigin = 'anonymous',
       hlsConfig = {}
     } = initProps;
 
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
     this._audio.autoplay = autoPlay;
+    this._audio.crossOrigin = crossOrigin;
     this.isPlayLogEnabled = enablePlayLog;
-    audioInstance = this._audio;
 
     if (useDefaultEventListeners || customEventListeners == null) {
       attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
@@ -87,6 +95,10 @@ class AudioX {
 
     if (showNotificationActions) {
       attachMediaSessionHandlers();
+    }
+
+    if (enableEQ) {
+      this.isEqEnabled = enableEQ;
     }
 
     if (enableHls) {
@@ -132,6 +144,18 @@ class AudioX {
     audioInstance.load();
   }
 
+  attachEq() {
+    if (this.isEqEnabled && this.eqStatus === 'IDEAL') {
+      try {
+        const eq = new Equalizer();
+        this.eqStatus = eq.status();
+        this.eqInstance = eq;
+      } catch (e) {
+        console.log('failed to enable equalizer');
+      }
+    }
+  }
+
   async play() {
     const isSourceAvailable = audioInstance.src !== '';
     if (
@@ -164,6 +188,7 @@ class AudioX {
         this.addMedia(mediaTrack).then(() => {
           if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
             setTimeout(async () => {
+              this.attachEq();
               await this.play();
             }, 950);
           }
@@ -249,6 +274,18 @@ class AudioX {
 
   attachEventListeners(eventListenersList: EventListenersList) {
     attachCustomEventListeners(eventListenersList);
+  }
+
+  getPresets() {
+    return Equalizer.getPresets();
+  }
+
+  setPreset(id: keyof Preset) {
+    this.eqInstance.setPreset(id);
+  }
+
+  setCustomEQ(gains: number[]) {
+    this.eqInstance.setCustomEQ(gains);
   }
 
   get id() {

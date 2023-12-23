@@ -7,6 +7,8 @@ import type {
   AudioEvents,
   AudioInit,
   AudioState,
+  Band,
+  EqualizerStatus,
   ErrorEvents,
   EventListenerCallbackMap,
   EventListenersList,
@@ -16,7 +18,8 @@ import type {
   NetworkState,
   PlayBackState,
   PlaybackRate,
-  ReadyState,
+  Preset,
+  ReadyState
 } from 'types';
 
 export {
@@ -28,6 +31,8 @@ export {
   AudioInit,
   AudioState,
   AudioX,
+  Band,
+  EqualizerStatus,
   ErrorEvents,
   EventListenerCallbackMap,
   EventListenersList,
@@ -37,5 +42,6 @@ export {
   NetworkState,
   PlayBackState,
   PlaybackRate,
-  ReadyState,
+  Preset,
+  ReadyState
 };
