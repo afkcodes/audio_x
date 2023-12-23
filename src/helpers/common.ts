@@ -118,7 +118,6 @@ const loadScript = (
 };
 
 export {
-  getPresets,
   getReadableErrorMessage,
   isValidArray,
   isValidFunction,
