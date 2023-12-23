@@ -70,7 +70,7 @@ class Equalizer {
       });
 
       const gainNode = this.audioCtx.createGain();
-      gainNode.gain.value = 0.8; //Normalize sound output
+      gainNode.gain.value = 1; //Normalize sound output
 
       audioSource.connect(equalizerBands[0]);
 
