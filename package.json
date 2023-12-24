@@ -15,13 +15,14 @@
     "mediaelement",
     "hls",
     "audio",
-    "html audio",
-    "audio player",
+    "html-audio",
+    "audio-player",
     "equalizer",
-    "web audio"
+    "web-audio",
+    "audio_x"
   ],
   "author": "Ashish Kumar",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@swc/core": "^1.3.100",
     "@types/node": "^20.10.4",
