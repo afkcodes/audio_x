@@ -1,6 +1,6 @@
 {
   "name": "audio_x",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The audio player for the gen-x",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,9 +10,19 @@
     "build": "tsup src/index.ts",
     "start": "npm run build -- --watch"
   },
-  "keywords": [],
+  "keywords": [
+    "npm",
+    "mediaelement",
+    "hls",
+    "audio",
+    "html-audio",
+    "audio-player",
+    "equalizer",
+    "web-audio",
+    "audio_x"
+  ],
   "author": "Ashish Kumar",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@swc/core": "^1.3.100",
     "@types/node": "^20.10.4",
