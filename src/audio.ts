@@ -2,10 +2,7 @@ import { Equalizer } from 'adapters/equalizer';
 import HlsAdapter from 'adapters/hls';
 import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
-import {
-  attachCustomEventListeners,
-  attachDefaultEventListeners
-} from 'events/listeners';
+import { attachEventListeners } from 'events/listeners';
 import { calculateActualPlayedLength } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 
@@ -14,7 +11,6 @@ import {
   updateMetaData
 } from 'mediasession/mediasessionHandler';
 import { READY_STATE } from 'states/audioState';
-import { EventListenersList } from 'types';
 import { AudioInit, MediaTrack, PlaybackRate } from 'types/audio.types';
 import { EqualizerStatus, Preset } from 'types/equalizer.types';
 
@@ -89,8 +85,16 @@ class AudioX {
     this._audio.crossOrigin = crossOrigin;
     this.isPlayLogEnabled = enablePlayLog;
 
-    if (useDefaultEventListeners || customEventListeners == null) {
-      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
+    if (customEventListeners !== null) {
+      if (useDefaultEventListeners) {
+        console.warn(
+          `useDefaultEventListeners is set to true at init, are you trying to use the default event listeners?
+            set customEventListeners to null to use default event listeners`
+        );
+      }
+      attachEventListeners(customEventListeners, false);
+    } else {
+      attachEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
     }
 
     if (showNotificationActions) {
@@ -272,8 +276,11 @@ class AudioX {
     return unsubscribe;
   }
 
-  attachEventListeners(eventListenersList: EventListenersList) {
-    attachCustomEventListeners(eventListenersList);
+  addEventListener(
+    event: keyof HTMLMediaElementEventMap,
+    callback: (data: any) => void
+  ) {
+    audioInstance.addEventListener(event, callback);
   }
 
   getPresets() {

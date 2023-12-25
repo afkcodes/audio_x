@@ -48,11 +48,10 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 Currently there is no npm package so you have to install directly from github.
 Will be publishied to npm soon.
 
-> Note: This library is in active development phase so, there might be some changes that would come,
-> that might be breaking, but be assured will try not to make them.
+> **Note:** &nbsp; _This library is in active development phase so, there might be some changes that would come,_ > _that might be breaking, but be assured will try not to make them._
 
 ```
-npm install "afkcodes/audio_x#try"
+npm install audio_x
 ```
 
 ### Usage
@@ -159,6 +158,54 @@ directly on the HTML5 audio element.
 const instance = AudioX.getAudioInstance();
 ```
 
+### Attaching custom event listeners
+
+---
+
+There are two ways to attach custom event listeners.
+
+#### Method 1
+
+```
+
+// Create an object of Events and callbacks as below
+
+const eventListenerMap: EventListenerCallbackMap = {
+  CAN_PLAY_THROUGH: (e, audioInstance, isPlayLogEnabled) => {
+    console.log(e, audioInstance, isPlayLogEnabled);
+  },
+  PLAY: (e, audioInstance, isPlayLogEnabled) => {
+    console.log(e, audioInstance, isPlayLogEnabled);
+  },
+};
+
+audio.init({
+    autoPlay: false,
+    useDefaultEventListeners: false, // set default event listener to false
+    mode: "REACT",
+    showNotificationActions: true,
+    customEventListeners: eventListenerMap, // provide custom event listeners at init
+    preloadStrategy: "auto",
+    playbackRate: 1,
+    enableEQ: true,
+    enablePlayLog: true,
+    enableHls: true,
+  });
+
+```
+
+> **NOTE:** &nbsp; _if custom event listeners are provided at init it will take priority even if useDefaultEventListeners is set to true_ > _to use default event listener set useDefaultEventListeners to true and customEventListeners to null._ > _Once custom event listener is added AUDIO_X_STATE will not not be fired, in favor of custom event listeners._ > _All the events should be handled manually, This method only allows audio events._
+
+#### Method 2
+
+```
+ audio.addEventListener("pause", (data: any) => {
+    console.log(data);
+  });
+```
+
+> **NOTE:** _This method allows adding events directly to audio element, and all the events can be added to the audio element,_ > _When using this set useDefaultEventListeners to false and customEventListeners to null to reduce un-necessary events being fired_ > _All the events should be handled manually_
+
 ### Setting up the equalizer
 
 ---
@@ -200,7 +247,7 @@ audio.setCustomEQ(gainsValue);
 
 ---
 
-- Ashish Kumar - [afkcodes](https://github.com/afkcodes)
+- Ashish Kumar - [afkcodes](https://afk.codes)
 
 ### Contributions
 

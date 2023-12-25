@@ -3329,14 +3329,6 @@ interface AudioState {
     previousTrackPlayTime: number;
 }
 
-interface ReadyState {
-    HAVE_NOTHING: 0;
-    HAVE_METADATA: 1;
-    HAVE_CURRENT_DATA: 2;
-    HAVE_FUTURE_DATA: 3;
-    HAVE_ENOUGH_DATA: 4;
-}
-
 interface Band {
     frequency: number;
     type: BiquadFilterType;
@@ -3348,20 +3340,6 @@ interface Preset {
     gains: number[];
 }
 type EqualizerStatus = 'ACTIVE' | 'FAILED' | 'IDEAL';
-
-interface ErrorEvents {
-    1: 'MEDIA_ERR_ABORTED';
-    3: 'MEDIA_ERR_DECODE';
-    2: 'MEDIA_ERR_NETWORK';
-    4: 'MEDIA_ERR_SRC_NOT_SUPPORTED';
-}
-
-interface NetworkState {
-    0: 'NETWORK_EMPTY';
-    1: 'NETWORK_IDLE';
-    2: 'NETWORK_LOADING';
-    3: 'NETWORK_NO_SOURCE';
-}
 
 declare class AudioX {
     private _audio;
@@ -3385,12 +3363,34 @@ declare class AudioX {
     seek(time: number): void;
     destroy(): Promise<void>;
     subscribe(eventName: string, callback: (data: any) => void, state?: any): () => void;
-    attachEventListeners(eventListenersList: EventListenersList): void;
+    addEventListener(event: keyof HTMLMediaElementEventMap, callback: (data: any) => void): void;
     getPresets(): Preset[];
     setPreset(id: keyof Preset): void;
     setCustomEQ(gains: number[]): void;
     get id(): string | null;
     static getAudioInstance(): HTMLAudioElement;
+}
+
+interface ReadyState {
+    HAVE_NOTHING: 0;
+    HAVE_METADATA: 1;
+    HAVE_CURRENT_DATA: 2;
+    HAVE_FUTURE_DATA: 3;
+    HAVE_ENOUGH_DATA: 4;
+}
+
+interface ErrorEvents {
+    1: 'MEDIA_ERR_ABORTED';
+    3: 'MEDIA_ERR_DECODE';
+    2: 'MEDIA_ERR_NETWORK';
+    4: 'MEDIA_ERR_SRC_NOT_SUPPORTED';
+}
+
+interface NetworkState {
+    0: 'NETWORK_EMPTY';
+    1: 'NETWORK_IDLE';
+    2: 'NETWORK_LOADING';
+    3: 'NETWORK_NO_SOURCE';
 }
 
 declare const AUDIO_X_CONSTANTS: Readonly<{
