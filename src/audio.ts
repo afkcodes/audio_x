@@ -278,7 +278,7 @@ class AudioX {
 
   addEventListener(
     event: keyof HTMLMediaElementEventMap,
-    callback: () => void
+    callback: (data: any) => void
   ) {
     audioInstance.addEventListener(event, callback);
   }
