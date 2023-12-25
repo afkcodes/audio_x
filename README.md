@@ -48,7 +48,7 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 Currently there is no npm package so you have to install directly from github.
 Will be publishied to npm soon.
 
-> **Note:** &nbsp; _This library is in active development phase so, there might be some changes that would come,_ > _that might be breaking, but be assured will try not to make them._
+> **Note:** &nbsp; _This library is in active development phase so, there might be some changes that would come, that might be breaking, but be assured will try not to make them._
 
 ```
 npm install audio_x
@@ -194,7 +194,7 @@ audio.init({
 
 ```
 
-> **NOTE:** &nbsp; _if custom event listeners are provided at init it will take priority even if useDefaultEventListeners is set to true_ > _to use default event listener set useDefaultEventListeners to true and customEventListeners to null._ > _Once custom event listener is added AUDIO_X_STATE will not not be fired, in favor of custom event listeners._ > _All the events should be handled manually, This method only allows audio events._
+> **NOTE:** &nbsp; _if custom event listeners are provided at init it will take priority even if useDefaultEventListeners is set to true, to use default event listener set useDefaultEventListeners to true and customEventListeners to null. Once custom event listener is added AUDIO_X_STATE will not not be fired, in favor of custom event listeners. All the events should be handled manually, This method only allows audio events._
 
 #### Method 2
 
@@ -204,7 +204,7 @@ audio.init({
   });
 ```
 
-> **NOTE:** _This method allows adding events directly to audio element, and all the events can be added to the audio element,_ > _When using this set useDefaultEventListeners to false and customEventListeners to null to reduce un-necessary events being fired_ > _All the events should be handled manually_
+> **NOTE:** _This method allows adding events directly to audio element, and all the events can be added to the audio element, When using this set useDefaultEventListeners to false and customEventListeners to null to reduce un-necessary events being fired.All the events should be handled manually_
 
 ### Setting up the equalizer
 
