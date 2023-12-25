@@ -16,7 +16,7 @@ import { AUDIO_EVENTS, HLS_EVENTS } from './audioEvents';
  * this attaches event listeners, for audio also sends a flag to calculate playLog
  * loops through the event listeners map and attaches it to the audio element
  */
-const attachDefaultEventListeners = (
+const attachEventListeners = (
   eventListenersCallbackMap: EventListenerCallbackMap,
   playLogEnabled: boolean = false
 ) => {
@@ -81,6 +81,6 @@ const attachHlsEventsListeners = (
 
 export {
   attachCustomEventListeners,
-  attachDefaultEventListeners,
+  attachEventListeners,
   attachHlsEventsListeners
 };
