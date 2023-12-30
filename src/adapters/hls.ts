@@ -59,9 +59,9 @@ class HlsAdapter {
   addHlsMedia(mediaTrack: MediaTrack) {
     const Hls = this.HlsClass;
     const audioInstance = AudioX.getAudioInstance();
+    hlsInstance.loadSource(mediaTrack.source);
     hlsInstance.attachMedia(audioInstance);
     hlsInstance.on(Hls.Events.MEDIA_ATTACHED, function () {
-      hlsInstance.loadSource(mediaTrack.source);
       console.log('hls media attached');
     });
   }

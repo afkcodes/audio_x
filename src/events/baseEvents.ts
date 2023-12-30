@@ -116,11 +116,12 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     const audioState = ChangeNotifier.getLatestState(
       'AUDIO_X_STATE'
     ) as AudioState;
+
     notifier.notify(
       'AUDIO_STATE',
       {
         playbackState: audioInstance.paused
-          ? audioState.playbackState
+          ? audioState?.playbackState
           : PLAYBACK_STATE.PLAYING,
         progress: audioInstance?.currentTime,
         error: { code: null, message: '', readable: '' }
