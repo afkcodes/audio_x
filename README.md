@@ -80,6 +80,7 @@ audio.init({
 
 // create track
 const track:MediaTrack ={
+  id: 1,
   artwork: [
     {
       src: "https://example.com/image.png",
