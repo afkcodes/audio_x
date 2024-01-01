@@ -19,6 +19,7 @@ export interface MediaTrack {
   title: string;
   source: string;
   artwork: MediaArtwork[] | null;
+  id?: string;
   duration?: number;
   genre?: string;
   album?: string;
