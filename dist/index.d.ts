@@ -3280,7 +3280,7 @@ type EventListenerCallbackMap = {
 type InitMode = 'REACT' | 'VANILLA';
 type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
 type Preload = 'none' | 'metadata' | 'auto' | '';
-type PlayBackState = 'idle' | 'playing' | 'ended' | 'ready' | 'paused' | 'stalled' | 'error' | 'buffering';
+type PlayBackState = 'idle' | 'playing' | 'ended' | 'ready' | 'paused' | 'stalled' | 'error' | 'buffering' | 'trackchanged' | 'durationchanged';
 type MediaArtwork = {
     src: string;
     name?: string;

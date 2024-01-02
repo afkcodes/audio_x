@@ -12,7 +12,9 @@ export type PlayBackState =
   | 'paused'
   | 'stalled'
   | 'error'
-  | 'buffering';
+  | 'buffering'
+  | 'trackchanged'
+  | 'durationchanged';
 
 export type MediaArtwork = { src: string; name?: string; sizes?: string };
 export interface MediaTrack {
