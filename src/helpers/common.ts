@@ -1,5 +1,6 @@
+import { AudioX } from 'audio';
 import { ERROR_MSG_MAP } from 'constants/common';
-import { AudioEvents, MediaTrack } from 'types';
+import { AudioEvents, AudioState, MediaTrack } from 'types';
 import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
@@ -117,12 +118,46 @@ const loadScript = (
   });
 };
 
+const handleQueuePlayback = () => {
+  const audio = new AudioX();
+  const queue = audio.getQueue();
+  let hasEnded = false;
+
+  const audioStateListener = (state: AudioState) => {
+    if (state.playbackState === 'ended' && !hasEnded) {
+      hasEnded = true;
+      if (queue && isValidArray(queue)) {
+        audio.playNext();
+      }
+    }
+    if (state.playbackState !== 'ended') {
+      hasEnded = false;
+    }
+  };
+
+  ChangeNotifier.listen('AUDIO_STATE', audioStateListener);
+};
+
+const shuffle = <T>(array: T[]): T[] => {
+  const shuffledArray = [...array];
+
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * i);
+
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+  }
+
+  return shuffledArray;
+};
+
 export {
   getReadableErrorMessage,
+  handleQueuePlayback,
   isValidArray,
   isValidFunction,
   isValidObject,
   isValidWindow,
   loadScript,
-  metaDataCreator
+  metaDataCreator,
+  shuffle
 };

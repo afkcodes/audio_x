@@ -3,7 +3,13 @@ import HlsAdapter from 'adapters/hls';
 import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import { attachEventListeners } from 'events/listeners';
-import { calculateActualPlayedLength } from 'helpers/common';
+import {
+  calculateActualPlayedLength,
+  handleQueuePlayback,
+  isValidArray,
+  isValidFunction,
+  shuffle
+} from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 
 import {
@@ -11,7 +17,12 @@ import {
   updateMetaData
 } from 'mediasession/mediasessionHandler';
 import { READY_STATE } from 'states/audioState';
-import { AudioInit, MediaTrack, PlaybackRate } from 'types/audio.types';
+import {
+  AudioInit,
+  MediaTrack,
+  PlaybackRate,
+  QueuePlaybackType
+} from 'types/audio.types';
 import { EqualizerStatus, Preset } from 'types/equalizer.types';
 
 let audioInstance: HTMLAudioElement;
@@ -21,6 +32,8 @@ class AudioX {
   private _audio: HTMLAudioElement;
   private isPlayLogEnabled: Boolean;
   private static _instance: AudioX;
+  private _queue: MediaTrack[];
+  private _currentQueueIndex: number = 0;
   private eqStatus: EqualizerStatus = 'IDEAL';
   private isEqEnabled: boolean = false;
   private eqInstance: Equalizer;
@@ -186,10 +199,24 @@ class AudioX {
    * You can also call addMedia and Play Separately to achieve playback.
    */
 
-  async addMediaAndPlay(mediaTrack: MediaTrack) {
+  async addMediaAndPlay(
+    mediaTrack?: MediaTrack | null,
+    playbackFn?: (mediaTrack: MediaTrack) => void
+    // this should be passed when there something needs to be done before the audio starts playing
+  ) {
+    const currentTrack =
+      mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
+    if (playbackFn && isValidFunction(playbackFn) && currentTrack) {
+      playbackFn(currentTrack as MediaTrack);
+    }
+    if (this._queue && isValidArray(this._queue)) {
+      this._currentQueueIndex = this._queue.findIndex(
+        (track) => track.id === currentTrack?.id
+      );
+    }
     try {
-      if (mediaTrack) {
-        this.addMedia(mediaTrack).then(() => {
+      if (currentTrack) {
+        this.addMedia(currentTrack).then(() => {
           if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
             setTimeout(async () => {
               this.attachEq();
@@ -197,9 +224,11 @@ class AudioX {
             }, 950);
           }
         });
+      } else {
+        console.error('Playback Failed, No MediaTrack Provided');
       }
     } catch (error) {
-      console.log('PLAYBACK FAILED');
+      console.error('Playback Failed');
     }
   }
 
@@ -293,6 +322,52 @@ class AudioX {
 
   setCustomEQ(gains: number[]) {
     this.eqInstance.setCustomEQ(gains);
+  }
+
+  addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
+    const playerQueue = isValidArray(queue) ? queue.slice() : [];
+    switch (playbackType) {
+      case 'DEFAULT':
+        this._queue = playerQueue;
+        break;
+      case 'REVERSE':
+        this._queue = playerQueue.reverse();
+        break;
+      case 'SHUFFLE':
+        this._queue = shuffle(playerQueue);
+        break;
+      default:
+        this._queue = playerQueue;
+        break;
+    }
+    handleQueuePlayback();
+  }
+
+  playNext() {
+    if (this._queue.length > this._currentQueueIndex + 1) {
+      this._currentQueueIndex++;
+      console.log('called playNext', this._queue, this._currentQueueIndex);
+      const nextTrack = this._queue[this._currentQueueIndex];
+      this.addMediaAndPlay(nextTrack);
+    } else {
+      console.warn('Queue ended');
+    }
+  }
+
+  playPrevious() {
+    if (this._currentQueueIndex > 0) {
+      this._currentQueueIndex--;
+      const previousTrack = this._queue[this._currentQueueIndex];
+      this.addMediaAndPlay(previousTrack);
+    } else {
+      console.log('At the beginning of the queue');
+    }
+  }
+
+  getQueue() {
+    if (this._queue && this._queue.length) {
+      return this._queue;
+    }
   }
 
   get id() {
