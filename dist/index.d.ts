@@ -3374,6 +3374,8 @@ declare class AudioX {
     addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType): void;
     playNext(): void;
     playPrevious(): void;
+    clearQueue(): void;
+    removeFromQueue(mediaTrack: MediaTrack): void;
     getQueue(): MediaTrack[] | undefined;
     get id(): string | null;
     static getAudioInstance(): HTMLAudioElement;
