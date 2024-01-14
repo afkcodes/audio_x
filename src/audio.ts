@@ -34,6 +34,7 @@ class AudioX {
   private static _instance: AudioX;
   private _queue: MediaTrack[];
   private _currentQueueIndex: number = 0;
+  private _fetchFn: (mediaTrack: MediaTrack) => Promise<void>;
   private eqStatus: EqualizerStatus = 'IDEAL';
   private isEqEnabled: boolean = false;
   private eqInstance: Equalizer;
@@ -201,13 +202,14 @@ class AudioX {
 
   async addMediaAndPlay(
     mediaTrack?: MediaTrack | null,
-    playbackFn?: (mediaTrack: MediaTrack) => void
+    fetchFn?: (mediaTrack: MediaTrack) => Promise<void>
     // this should be passed when there something needs to be done before the audio starts playing
   ) {
     const currentTrack =
       mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
-    if (playbackFn && isValidFunction(playbackFn) && currentTrack) {
-      playbackFn(currentTrack as MediaTrack);
+    if (fetchFn && isValidFunction(fetchFn) && currentTrack) {
+      this._fetchFn = fetchFn;
+      await fetchFn(currentTrack as MediaTrack);
     }
     if (this._queue && isValidArray(this._queue)) {
       this._currentQueueIndex = this._queue.findIndex(
@@ -347,7 +349,7 @@ class AudioX {
     if (this._queue.length > this._currentQueueIndex + 1) {
       this._currentQueueIndex++;
       const nextTrack = this._queue[this._currentQueueIndex];
-      this.addMediaAndPlay(nextTrack);
+      this.addMediaAndPlay(nextTrack, this._fetchFn);
     } else {
       console.warn('Queue ended');
     }
@@ -357,7 +359,7 @@ class AudioX {
     if (this._currentQueueIndex > 0) {
       this._currentQueueIndex--;
       const previousTrack = this._queue[this._currentQueueIndex];
-      this.addMediaAndPlay(previousTrack);
+      this.addMediaAndPlay(previousTrack, this._fetchFn);
     } else {
       console.log('At the beginning of the queue');
     }
