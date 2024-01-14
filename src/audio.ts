@@ -346,7 +346,6 @@ class AudioX {
   playNext() {
     if (this._queue.length > this._currentQueueIndex + 1) {
       this._currentQueueIndex++;
-      console.log('called playNext', this._queue, this._currentQueueIndex);
       const nextTrack = this._queue[this._currentQueueIndex];
       this.addMediaAndPlay(nextTrack);
     } else {
