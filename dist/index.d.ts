@@ -3349,6 +3349,7 @@ declare class AudioX {
     private static _instance;
     private _queue;
     private _currentQueueIndex;
+    private _fetchFn;
     private eqStatus;
     private isEqEnabled;
     private eqInstance;
@@ -3357,7 +3358,7 @@ declare class AudioX {
     addMedia(mediaTrack: MediaTrack): Promise<void>;
     attachEq(): void;
     play(): Promise<void>;
-    addMediaAndPlay(mediaTrack?: MediaTrack | null, playbackFn?: (mediaTrack: MediaTrack) => void): Promise<void>;
+    addMediaAndPlay(mediaTrack?: MediaTrack | null, fetchFn?: (mediaTrack: MediaTrack) => Promise<void>): Promise<void>;
     pause(): void;
     stop(): void;
     reset(): Promise<void>;
