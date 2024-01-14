@@ -364,6 +364,21 @@ class AudioX {
     }
   }
 
+  clearQueue() {
+    if (this._queue && isValidArray(this._queue)) {
+      this._queue = [];
+    }
+  }
+
+  removeFromQueue(mediaTrack: MediaTrack) {
+    if (this._queue && isValidArray(this._queue)) {
+      const queue = this._queue.filter(
+        (track: MediaTrack) => track.id == mediaTrack.id
+      );
+      this._queue = queue;
+    }
+  }
+
   getQueue() {
     if (this._queue && this._queue.length) {
       return this._queue;
