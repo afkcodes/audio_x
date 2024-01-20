@@ -3329,6 +3329,7 @@ interface AudioState {
     currentTrackPlayTime: number;
     previousTrackPlayTime: number;
 }
+type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';
 
 interface Band {
     frequency: number;
@@ -3346,6 +3347,9 @@ declare class AudioX {
     private _audio;
     private isPlayLogEnabled;
     private static _instance;
+    private _queue;
+    private _currentQueueIndex;
+    private _fetchFn;
     private eqStatus;
     private isEqEnabled;
     private eqInstance;
@@ -3354,7 +3358,7 @@ declare class AudioX {
     addMedia(mediaTrack: MediaTrack): Promise<void>;
     attachEq(): void;
     play(): Promise<void>;
-    addMediaAndPlay(mediaTrack: MediaTrack): Promise<void>;
+    addMediaAndPlay(mediaTrack?: MediaTrack | null, fetchFn?: (mediaTrack: MediaTrack) => Promise<void>): Promise<void>;
     pause(): void;
     stop(): void;
     reset(): Promise<void>;
@@ -3368,6 +3372,12 @@ declare class AudioX {
     getPresets(): Preset[];
     setPreset(id: keyof Preset): void;
     setCustomEQ(gains: number[]): void;
+    addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType): void;
+    playNext(): void;
+    playPrevious(): void;
+    clearQueue(): void;
+    removeFromQueue(mediaTrack: MediaTrack): void;
+    getQueue(): MediaTrack[] | undefined;
     get id(): string | null;
     static getAudioInstance(): HTMLAudioElement;
 }
@@ -3404,4 +3414,4 @@ declare const AUDIO_EVENTS: AudioEvents;
 
 declare const AUDIO_STATE: AudioState;
 
-export { AUDIO_EVENTS, AUDIO_STATE, AUDIO_X_CONSTANTS, type AudioError, type AudioEvents, type AudioInit, type AudioState, AudioX, type Band, type EqualizerStatus, type ErrorEvents, type EventListenerCallbackMap, type EventListenersList, type InitMode, type MediaArtwork, type MediaTrack, type NetworkState, type PlayBackState, type PlaybackRate, type Preset, type ReadyState };
+export { AUDIO_EVENTS, AUDIO_STATE, AUDIO_X_CONSTANTS, type AudioError, type AudioEvents, type AudioInit, type AudioState, AudioX, type Band, type EqualizerStatus, type ErrorEvents, type EventListenerCallbackMap, type EventListenersList, type InitMode, type MediaArtwork, type MediaTrack, type NetworkState, type PlayBackState, type PlaybackRate, type Preset, type QueuePlaybackType, type ReadyState };

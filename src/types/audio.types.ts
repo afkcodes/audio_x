@@ -63,3 +63,5 @@ export interface AudioState {
   currentTrackPlayTime: number;
   previousTrackPlayTime: number;
 }
+
+export type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';
