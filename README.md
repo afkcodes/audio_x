@@ -39,7 +39,7 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 - Updates to APIs for better DX
 - React hooks to easily get started with React.
 - Ads Support
-- Queue Support and etc.
+- ~~Queue Support~~ [✓] Done.
 
 ### Installation
 
@@ -242,6 +242,57 @@ const gainsValue = preset[0].gains;   // default preset gains [0, 0, 0, 0, 0, 0,
 gainsValue[0] = 2.5;   // updated gain values [2.5, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 audio.setCustomEQ(gainsValue);
 
+```
+
+### Adding and Handling Queue
+
+// Audio_x allows you to play audio in queue.
+
+```
+// To add a queue
+
+const tracks = [track_1, track_2, ...other_tracks]
+audio.addQueue(tracks, "DEFAULT");
+
+NOTE: addQueue takes two parameters one is tracks array and second is playback type i.e "DEFAULT" | "REVERSE" | "SHUFFLE"
+if no playbackType is passed audio_x will play it as DEFAULT
+
+// To Play the Queue from the beginning, call addMediaAndPlay like below.
+
+audio.addMediaAndPlay();
+
+// if you are fetching something dynamically to play audio, such as source of the audio you can do it like below.
+
+audio.addMediaAndPlay(null, async (currentTrack: MediaTrack) => {
+        const res = await fetch('url);
+        currentTrack.source = res.data.url;
+      });
+
+// This will make sure that the above function gets called before every audio that plays in a queue.
+```
+
+```
+// To add a single track to queue
+
+audio.addToQueue(track);
+```
+
+```
+// To clear Queue
+
+audio.clearQueue();
+```
+
+```
+// To play Next in Queue
+
+audio.playNext();
+```
+
+```
+// To play Previous in Queue
+
+audio.playPrevious();
 ```
 
 ### Author
