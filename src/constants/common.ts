@@ -16,7 +16,8 @@ const PLAYBACK_STATE = Object.freeze({
   ENDED: 'ended',
   STALLED: 'stalled',
   ERROR: 'error',
-  TRACK_CHANGE: 'trackchanged'
+  TRACK_CHANGE: 'trackchanged',
+  DURATION_CHANGE: 'durationchanged'
 });
 
 const ERROR_MSG_MAP: ErrorMessageMap = Object.freeze({
@@ -28,4 +29,8 @@ const ERROR_MSG_MAP: ErrorMessageMap = Object.freeze({
   DEFAULT: 'An unknown error occurred.'
 });
 
-export { AUDIO_X_CONSTANTS, ERROR_MSG_MAP, PLAYBACK_STATE };
+const URLS = {
+  HLS: 'https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js'
+};
+
+export { AUDIO_X_CONSTANTS, ERROR_MSG_MAP, PLAYBACK_STATE, URLS };

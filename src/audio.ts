@@ -1,18 +1,29 @@
+import { Equalizer } from 'adapters/equalizer';
+import HlsAdapter from 'adapters/hls';
 import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
 import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
+import { attachEventListeners } from 'events/listeners';
 import {
-  attachCustomEventListeners,
-  attachDefaultEventListeners
-} from 'events/listeners';
-import { calculateActualPlayedLength } from 'helpers/common';
+  calculateActualPlayedLength,
+  handleQueuePlayback,
+  isValidArray,
+  isValidFunction,
+  shuffle
+} from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
+
 import {
   attachMediaSessionHandlers,
   updateMetaData
 } from 'mediasession/mediasessionHandler';
 import { READY_STATE } from 'states/audioState';
-import { EventListenersList } from 'types';
-import { AudioInit, MediaTrack, PlaybackRate } from 'types/audio.types';
+import {
+  AudioInit,
+  MediaTrack,
+  PlaybackRate,
+  QueuePlaybackType
+} from 'types/audio.types';
+import { EqualizerStatus, Preset } from 'types/equalizer.types';
 
 let audioInstance: HTMLAudioElement;
 const notifier = ChangeNotifier;
@@ -21,6 +32,12 @@ class AudioX {
   private _audio: HTMLAudioElement;
   private isPlayLogEnabled: Boolean;
   private static _instance: AudioX;
+  private _queue: MediaTrack[];
+  private _currentQueueIndex: number = 0;
+  private _fetchFn: (mediaTrack: MediaTrack) => Promise<void>;
+  private eqStatus: EqualizerStatus = 'IDEAL';
+  private isEqEnabled: boolean = false;
+  private eqInstance: Equalizer;
 
   constructor() {
     if (AudioX._instance) {
@@ -38,6 +55,7 @@ class AudioX {
 
     AudioX._instance = this;
     this._audio = new Audio();
+    audioInstance = this._audio;
   }
 
   /**
@@ -64,41 +82,95 @@ class AudioX {
   async init(initProps: AudioInit) {
     const {
       preloadStrategy = 'auto',
-      autoplay = false,
+      autoPlay = false,
       useDefaultEventListeners = true,
       customEventListeners = null,
       showNotificationActions = false,
-      enablePlayLog = false
+      enablePlayLog = false,
+      enableHls = false,
+      enableEQ = false,
+      crossOrigin = 'anonymous',
+      hlsConfig = {}
     } = initProps;
 
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
-    this._audio.autoplay = autoplay;
+    this._audio.autoplay = autoPlay;
+    this._audio.crossOrigin = crossOrigin;
     this.isPlayLogEnabled = enablePlayLog;
-    audioInstance = this._audio;
 
-    if (useDefaultEventListeners || customEventListeners == null) {
-      attachDefaultEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
+    if (customEventListeners !== null) {
+      if (useDefaultEventListeners) {
+        console.warn(
+          `useDefaultEventListeners is set to true at init, are you trying to use the default event listeners?
+            set customEventListeners to null to use default event listeners`
+        );
+      }
+      attachEventListeners(customEventListeners, false);
+    } else {
+      attachEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
     }
 
     if (showNotificationActions) {
       attachMediaSessionHandlers();
     }
+
+    if (enableEQ) {
+      this.isEqEnabled = enableEQ;
+    }
+
+    if (enableHls) {
+      const hls = new HlsAdapter();
+      hls.init(hlsConfig, enablePlayLog);
+    }
   }
 
   async addMedia(mediaTrack: MediaTrack) {
+    if (!mediaTrack) {
+      return;
+    }
+
+    const mediaType = mediaTrack.source.includes('.m3u8') ? 'HLS' : 'DEFAULT';
+
     if (this.isPlayLogEnabled) {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
-    if (mediaTrack) {
-      audioInstance.src = mediaTrack.source;
-      notifier.notify('AUDIO_STATE', {
-        playbackState: PLAYBACK_STATE.TRACK_CHANGE,
-        currentTrackPlayTime: 0,
-        currentTrack: mediaTrack
-      });
 
-      audioInstance.load();
+    if (mediaType === 'HLS') {
+      const hls = new HlsAdapter();
+      const hlsInstance = hls.getHlsInstance();
+      if (hlsInstance) {
+        hlsInstance.detachMedia();
+        hls.addHlsMedia(mediaTrack);
+      } else {
+        console.warn(
+          'The source provided seems to be a HLS stream but, hls playback is not enabled. Please have a look at init method of AudioX'
+        );
+        await this.reset();
+      }
+    } else {
+      audioInstance.src = mediaTrack.source;
+    }
+
+    notifier.notify('AUDIO_STATE', {
+      playbackState: PLAYBACK_STATE.TRACK_CHANGE,
+      currentTrackPlayTime: 0,
+      currentTrack: mediaTrack
+    });
+
+    updateMetaData(mediaTrack);
+    audioInstance.load();
+  }
+
+  attachEq() {
+    if (this.isEqEnabled && this.eqStatus === 'IDEAL') {
+      try {
+        const eq = new Equalizer();
+        this.eqStatus = eq.status();
+        this.eqInstance = eq;
+      } catch (e) {
+        console.log('failed to enable equalizer');
+      }
     }
   }
 
@@ -109,7 +181,14 @@ class AudioX {
       audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA &&
       isSourceAvailable
     ) {
-      await audioInstance.play();
+      await audioInstance
+        .play()
+        .then(() => {
+          console.log('PLAYING');
+        })
+        .catch(() => {
+          console.warn('cancelling current audio playback, track changed');
+        });
     }
   }
 
@@ -121,17 +200,37 @@ class AudioX {
    * You can also call addMedia and Play Separately to achieve playback.
    */
 
-  async addMediaAndPlay(mediaTrack: MediaTrack) {
-    if (mediaTrack) {
-      this.addMedia(mediaTrack).then(() => {
-        if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
-          setTimeout(async () => {
-            await this.play().then(() => {
-              updateMetaData(mediaTrack);
-            });
-          }, 950);
-        }
-      });
+  async addMediaAndPlay(
+    mediaTrack?: MediaTrack | null,
+    fetchFn?: (mediaTrack: MediaTrack) => Promise<void>
+    // this should be passed when there something needs to be done before the audio starts playing
+  ) {
+    const currentTrack =
+      mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
+    if (fetchFn && isValidFunction(fetchFn) && currentTrack) {
+      this._fetchFn = fetchFn;
+      await fetchFn(currentTrack as MediaTrack);
+    }
+    if (this._queue && isValidArray(this._queue)) {
+      this._currentQueueIndex = this._queue.findIndex(
+        (track) => track.id === currentTrack?.id
+      );
+    }
+    try {
+      if (currentTrack) {
+        this.addMedia(currentTrack).then(() => {
+          if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
+            setTimeout(async () => {
+              this.attachEq();
+              await this.play();
+            }, 950);
+          }
+        });
+      } else {
+        console.error('Playback Failed, No MediaTrack Provided');
+      }
+    } catch (error) {
+      console.error('Playback Failed');
     }
   }
 
@@ -208,19 +307,87 @@ class AudioX {
     return unsubscribe;
   }
 
-  attachEventListeners(eventListenersList: EventListenersList) {
-    attachCustomEventListeners(eventListenersList);
+  addEventListener(
+    event: keyof HTMLMediaElementEventMap,
+    callback: (data: any) => void
+  ) {
+    audioInstance.addEventListener(event, callback);
+  }
+
+  getPresets() {
+    return Equalizer.getPresets();
+  }
+
+  setPreset(id: keyof Preset) {
+    this.eqInstance.setPreset(id);
+  }
+
+  setCustomEQ(gains: number[]) {
+    this.eqInstance.setCustomEQ(gains);
+  }
+
+  addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
+    const playerQueue = isValidArray(queue) ? queue.slice() : [];
+    switch (playbackType) {
+      case 'DEFAULT':
+        this._queue = playerQueue;
+        break;
+      case 'REVERSE':
+        this._queue = playerQueue.reverse();
+        break;
+      case 'SHUFFLE':
+        this._queue = shuffle(playerQueue);
+        break;
+      default:
+        this._queue = playerQueue;
+        break;
+    }
+    handleQueuePlayback();
+  }
+
+  playNext() {
+    if (this._queue.length > this._currentQueueIndex + 1) {
+      this._currentQueueIndex++;
+      const nextTrack = this._queue[this._currentQueueIndex];
+      this.addMediaAndPlay(nextTrack, this._fetchFn);
+    } else {
+      console.warn('Queue ended');
+    }
+  }
+
+  playPrevious() {
+    if (this._currentQueueIndex > 0) {
+      this._currentQueueIndex--;
+      const previousTrack = this._queue[this._currentQueueIndex];
+      this.addMediaAndPlay(previousTrack, this._fetchFn);
+    } else {
+      console.log('At the beginning of the queue');
+    }
+  }
+
+  clearQueue() {
+    if (this._queue && isValidArray(this._queue)) {
+      this._queue = [];
+    }
+  }
+
+  removeFromQueue(mediaTrack: MediaTrack) {
+    if (this._queue && isValidArray(this._queue)) {
+      const queue = this._queue.filter(
+        (track: MediaTrack) => track.id == mediaTrack.id
+      );
+      this._queue = queue;
+    }
+  }
+
+  getQueue() {
+    if (this._queue && this._queue.length) {
+      return this._queue;
+    }
   }
 
   get id() {
     return audioInstance?.getAttribute('id');
-  }
-
-  set media(media: MediaTrack) {
-    if (audioInstance) {
-      audioInstance.src = media?.source;
-    }
-    // TODO: implementation metadata
   }
 
   static getAudioInstance() {

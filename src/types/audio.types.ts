@@ -1,3 +1,4 @@
+import { HlsConfig } from 'types/hls.js';
 import { EventListenerCallbackMap } from './audioEvents.types';
 
 export type InitMode = 'REACT' | 'VANILLA';
@@ -11,13 +12,16 @@ export type PlayBackState =
   | 'paused'
   | 'stalled'
   | 'error'
-  | 'buffering';
+  | 'buffering'
+  | 'trackchanged'
+  | 'durationchanged';
 
 export type MediaArtwork = { src: string; name?: string; sizes?: string };
 export interface MediaTrack {
   title: string;
   source: string;
   artwork: MediaArtwork[] | null;
+  id?: string;
   duration?: number;
   genre?: string;
   album?: string;
@@ -33,8 +37,12 @@ export interface AudioInit {
   preloadStrategy?: Preload;
   playbackRate?: PlaybackRate;
   customEventListeners?: EventListenerCallbackMap | null;
-  autoplay?: boolean;
+  autoPlay?: boolean;
   enablePlayLog?: boolean;
+  enableHls?: boolean;
+  enableEQ?: boolean;
+  crossOrigin?: string;
+  hlsConfig?: HlsConfig | {};
 }
 
 export interface AudioError {
@@ -55,3 +63,5 @@ export interface AudioState {
   currentTrackPlayTime: number;
   previousTrackPlayTime: number;
 }
+
+export type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';
