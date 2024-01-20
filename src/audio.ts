@@ -14,7 +14,9 @@ import ChangeNotifier from 'helpers/notifier';
 
 import {
   attachMediaSessionHandlers,
-  updateMetaData
+  resetPositionState,
+  updateMetaData,
+  updatePositionState
 } from 'mediasession/mediasessionHandler';
 import { READY_STATE } from 'states/audioState';
 import {
@@ -159,6 +161,7 @@ class AudioX {
     });
 
     updateMetaData(mediaTrack);
+    resetPositionState();
     audioInstance.load();
   }
 
@@ -185,6 +188,7 @@ class AudioX {
         .play()
         .then(() => {
           console.log('PLAYING');
+          updatePositionState();
         })
         .catch(() => {
           console.warn('cancelling current audio playback, track changed');

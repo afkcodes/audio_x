@@ -4,6 +4,10 @@ import {
   getReadableErrorMessage
 } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
+import {
+  resetPositionState,
+  updatePositionState
+} from 'mediasession/mediasessionHandler';
 import { AudioState, EventListenerCallbackMap } from 'types';
 import { ERROR_EVENTS } from './errorEvents';
 
@@ -21,6 +25,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_state_${e.type}`
     );
+    resetPositionState();
   },
 
   DURATION_CHANGE: (e, audioInstance: HTMLAudioElement) => {
@@ -51,6 +56,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_state_${e.type}`
     );
+    updatePositionState();
   },
 
   LOADED_DATA: (e, audioInstance: HTMLAudioElement) => {
@@ -187,6 +193,8 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
       },
       `audiox_baseEvents_state_${e.type}`
     );
+    resetPositionState();
+    updatePositionState();
   },
 
   WAITING: (e: Event, audioInstance: HTMLAudioElement) => {

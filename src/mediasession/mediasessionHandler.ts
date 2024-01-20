@@ -1,12 +1,11 @@
 import { AudioX } from 'audio';
-import { metaDataCreator } from 'helpers/common';
+import { isValidWindow, metaDataCreator } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 import { AudioState } from 'types';
 
 export const updateMetaData = (data: any) => {
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata(metaDataCreator(data));
-    updatePositionState();
   }
 };
 
@@ -35,6 +34,20 @@ export const updatePositionState = () => {
       duration: duration,
       playbackRate: audioState.playbackRate,
       position: currentTime
+    });
+  }
+};
+
+export const resetPositionState = () => {
+  if (isValidWindow && 'setPositionState' in navigator.mediaSession) {
+    // Reset position state when media is reset.
+    const { duration } = AudioX.getAudioInstance();
+    console.log('reseting position state');
+    console.log({ duration });
+    navigator.mediaSession.setPositionState({
+      position: 0.0,
+      duration: 0.0,
+      playbackRate: 1
     });
   }
 };
