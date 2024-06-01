@@ -13,7 +13,6 @@ export const attachMediaSessionHandlers = () => {
   if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => {
       const audioInstance = AudioX.getAudioInstance();
-
       audioInstance.play();
     });
     navigator.mediaSession.setActionHandler('pause', () => {
