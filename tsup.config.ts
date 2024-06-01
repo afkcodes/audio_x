@@ -7,7 +7,7 @@ const config: Options = {
   minify: true,
   clean: true,
   treeshake: true,
-  target: 'es5',
+  target: 'es6',
   esbuildOptions(options, context) {
     options.drop = ['console', 'debugger'];
   },

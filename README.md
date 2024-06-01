@@ -1,4 +1,4 @@
-## audio_x
+# audio_x
 
 ---
 
@@ -14,7 +14,7 @@ most popular formats.
 
 For a comprehensive list of formats support visit [MDN audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs)
 
-### Features
+## Features
 
 ---
 
@@ -45,12 +45,7 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 
 ---
 
-Currently there is no npm package so you have to install directly from github.
-Will be publishied to npm soon.
-
-> **Note:** &nbsp; _This library is in active development phase so, there might be some changes that would come, that might be breaking, but be assured will try not to make them._
-
-```
+```JS
 npm install audio_x
 ```
 
@@ -58,7 +53,7 @@ npm install audio_x
 
 ---
 
-```
+```JS
 import { AUDIO_STATE, AudioState, AudioX, MediaTrack } from "audio_x";
 
 
@@ -155,7 +150,7 @@ audio.subscribe("AUDIO_X_STATE", (data: AudioState) => {
 audio_x exports audioInstance, through a static method, so that you can add your own event-listeners
 directly on the HTML5 audio element.
 
-```
+```JS
 const instance = AudioX.getAudioInstance();
 ```
 
@@ -167,7 +162,7 @@ There are two ways to attach custom event listeners.
 
 #### Method 1
 
-```
+```JS
 
 // Create an object of Events and callbacks as below
 
@@ -199,7 +194,7 @@ audio.init({
 
 #### Method 2
 
-```
+```JS
  audio.addEventListener("pause", (data: any) => {
     console.log(data);
   });
@@ -211,7 +206,7 @@ audio.init({
 
 ---
 
-```
+```JS
 // Getting the Presets
 const presets = audio.getPresets(); // will return array of pre-tuned filters
 
@@ -248,7 +243,7 @@ audio.setCustomEQ(gainsValue);
 
 // Audio_x allows you to play audio in queue.
 
-```
+```JS
 // To add a queue
 
 const tracks = [track_1, track_2, ...other_tracks]
@@ -271,25 +266,25 @@ audio.addMediaAndPlay(null, async (currentTrack: MediaTrack) => {
 // This will make sure that the above function gets called before every audio that plays in a queue.
 ```
 
-```
+```JS
 // To add a single track to queue
 
 audio.addToQueue(track);
 ```
 
-```
+```JS
 // To clear Queue
 
 audio.clearQueue();
 ```
 
-```
+```JS
 // To play Next in Queue
 
 audio.playNext();
 ```
 
-```
+```JS
 // To play Previous in Queue
 
 audio.playPrevious();
