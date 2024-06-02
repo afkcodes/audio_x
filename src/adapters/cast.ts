@@ -12,11 +12,14 @@ import { loadScript } from 'helpers/common';
 class CastAdapter {
   private static _instance: CastAdapter;
   private castContext: any;
+  private remotePlayer: any;
+  private remotePlayerController: any;
+  private castSession: any;
 
   constructor() {
     if (CastAdapter._instance) {
       console.warn(
-        'Instantiation failed: cannot create multiple instance of Cast returning existing instance'
+        'Instantiation failed: cannot create multiple instances of Cast framework returning existing instance'
       );
       return CastAdapter._instance;
     }
@@ -27,7 +30,7 @@ class CastAdapter {
     await loadScript(
       URLS.CAST,
       () => {
-        console.log('HLS Loaded');
+        console.log('Cast framework Loaded');
       },
       'cast'
     )
@@ -52,6 +55,47 @@ class CastAdapter {
         autoJoinPolicy: CAST_JOIN_POLICY[joinPolicy]
       });
     }
+  }
+
+  castAudio() {
+    this.castContext.requestSession().then(() => {
+      if (!this.castContext.getCurrentSession()) {
+        throw new Error(
+          'Failed to request Cast Session -  Device Connection Failed'
+        );
+      } else {
+        this.castSession = this.castContext.getCurrentSession();
+        this.initializeRemotePlayer();
+      }
+    });
+  }
+
+  initializeRemotePlayer() {
+    this.remotePlayer = new window.cast.framework.RemotePlayer();
+    this.remotePlayerController =
+      new window.cast.framework.RemotePlayerController(this.remotePlayer);
+  }
+
+  getRemotePlayer() {
+    if (this.castSession) {
+      return this.remotePlayer;
+    } else {
+      console.error('Failed to get remotePlayer - No Cast Session active');
+    }
+  }
+
+  getRemotePlayerController() {
+    if (this.castSession) {
+      return this.remotePlayerController;
+    } else {
+      console.error(
+        'Failed to get remotePlayerController - No Cast Session active'
+      );
+    }
+  }
+
+  getCastSession() {
+    return this.castSession ? this.castSession : undefined;
   }
 }
 
