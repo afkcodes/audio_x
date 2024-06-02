@@ -34,8 +34,8 @@ export const AUDIO_STATE: AudioState = {
 */
 ChangeNotifier.listen(
   'AUDIO_STATE',
-  (data: AudioState) => {
-    ChangeNotifier.notify('AUDIO_X_STATE', { ...AUDIO_STATE, ...data });
+  (audioState: AudioState) => {
+    ChangeNotifier.notify('AUDIO_X_STATE', { ...AUDIO_STATE, ...audioState });
   },
   AUDIO_STATE
 );

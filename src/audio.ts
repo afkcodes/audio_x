@@ -381,9 +381,7 @@ class AudioX {
   }
 
   getQueue() {
-    if (this._queue && this._queue.length) {
-      return this._queue;
-    }
+    return this._queue && isValidArray(this._queue) ? this._queue : [];
   }
 
   get id() {

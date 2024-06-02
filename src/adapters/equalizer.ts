@@ -9,52 +9,65 @@ class Equalizer {
   private audioCtx: AudioContext;
   private audioCtxStatus: EqualizerStatus;
   private eqFilterBands: BiquadFilterNode[];
+  private readonly MAX_GAIN_SUM: number = 12; // Maximum sum of gains to avoid distortion
 
+  /**
+   * Creates an instance of Equalizer or returns the existing instance.
+   */
   constructor() {
     if (Equalizer._instance) {
       console.warn(
-        'Instantiation failed: cannot create multiple instance of Equalizer returning existing instance'
+        'Instantiation failed: cannot create multiple instances of Equalizer. Returning existing instance.'
       );
       return Equalizer._instance;
     }
 
-    if (this.audioCtx === undefined && typeof AudioContext !== 'undefined') {
-      if (typeof AudioContext !== 'undefined') {
-        this.audioCtx = new AudioContext();
-        this.audioCtxStatus = 'ACTIVE';
-        this.init();
-      } else if (typeof (window as any).webkitAudioContext !== 'undefined') {
-        this.audioCtx = new (window as any).webkitAudioContext();
-        this.audioCtxStatus = 'ACTIVE';
-        this.init();
-      } else {
-        throw new Error('Web Audio API is not supported in this browser.');
-      }
-    } else {
-      console.log('Equalizer not initialized, AudioContext failed');
-      this.audioCtxStatus = 'FAILED';
-    }
-
-    // context state at this time is `undefined` in iOS8 Safari
-    if (
-      this.audioCtxStatus === 'ACTIVE' &&
-      this.audioCtx.state === 'suspended'
-    ) {
-      var resume = () => {
-        this.audioCtx.resume();
-        setTimeout(() => {
-          if (this.audioCtx.state === 'running') {
-            document.body.removeEventListener('click', resume, false);
-          }
-        }, 0);
-      };
-
-      document.body.addEventListener('click', resume, false);
-    }
+    this.initializeAudioContext();
 
     Equalizer._instance = this;
   }
 
+  /**
+   * Initializes the AudioContext, ensuring compatibility with older browsers.
+   * @private
+   */
+  private initializeAudioContext() {
+    if (typeof AudioContext !== 'undefined') {
+      this.audioCtx = new AudioContext();
+    } else if (typeof (window as any).webkitAudioContext !== 'undefined') {
+      this.audioCtx = new (window as any).webkitAudioContext();
+    } else {
+      console.error('Web Audio API is not supported in this browser.');
+    }
+
+    this.audioCtxStatus = 'ACTIVE';
+    this.init();
+
+    if (this.audioCtx.state === 'suspended') {
+      this.addResumeListener();
+    }
+  }
+
+  /**
+   * Adds a listener to resume the AudioContext on user interaction.
+   * @private
+   */
+  private addResumeListener() {
+    const resume = () => {
+      this.audioCtx.resume();
+      setTimeout(() => {
+        if (this.audioCtx.state === 'running') {
+          document.body.removeEventListener('click', resume, false);
+        }
+      }, 0);
+    };
+
+    document.body.addEventListener('click', resume, false);
+  }
+
+  /**
+   * Initializes the equalizer by setting up the audio source and filter bands.
+   */
   init() {
     try {
       const audioInstance = AudioX.getAudioInstance();
@@ -70,7 +83,7 @@ class Equalizer {
       });
 
       const gainNode = this.audioCtx.createGain();
-      gainNode.gain.value = 1; //Normalize sound output
+      gainNode.gain.value = 1; // TODO: Normalize sound output
 
       audioSource.connect(equalizerBands[0]);
 
@@ -84,29 +97,64 @@ class Equalizer {
       this.audioCtxStatus = 'ACTIVE';
       this.eqFilterBands = equalizerBands;
     } catch (error) {
+      console.error('Equalizer initialization failed:', error);
       this.audioCtxStatus = 'FAILED';
     }
   }
 
+  /**
+   * Sets the equalizer to a predefined preset.
+   * @param {keyof Preset} id - The ID of the preset to apply.
+   */
   setPreset(id: keyof Preset) {
     const preset = presets.find((el) => el.id === id);
-    console.log({ preset });
+    if (!preset) {
+      console.error('Preset not found:', id);
+      return;
+    }
+
     if (
       !this.eqFilterBands ||
-      this.eqFilterBands.length !== preset?.gains.length
+      this.eqFilterBands.length !== preset.gains.length
     ) {
       console.error('Invalid data provided.');
       return;
     }
-    for (let i = 0; i < this.eqFilterBands.length; i++) {
-      this.eqFilterBands[i].gain.value = preset?.gains[i];
-    }
+
+    const normalizedGains = this.normalizeGains(preset.gains);
+
+    this.eqFilterBands.forEach((band, index) => {
+      band.gain.value = normalizedGains[index];
+    });
   }
 
+  /**
+   * Normalizes the gain values to avoid distortion.
+   * @param {number[]} gains - The gain values to normalize.
+   * @returns {number[]} The normalized gain values.
+   * @private
+   */
+  private normalizeGains(gains: number[]): number[] {
+    const gainSum = gains.reduce((sum, gain) => sum + Math.abs(gain), 0);
+    if (gainSum > this.MAX_GAIN_SUM) {
+      const scale = this.MAX_GAIN_SUM / gainSum;
+      return gains.map((gain) => gain * scale);
+    }
+    return gains;
+  }
+
+  /**
+   * Retrieves the list of available presets.
+   * @returns {Preset[]} The list of available presets.
+   */
   static getPresets() {
     return presets;
   }
 
+  /**
+   * Gets the current status of the AudioContext.
+   * @returns {EqualizerStatus} The current status of the AudioContext.
+   */
   status() {
     if (this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
@@ -114,11 +162,18 @@ class Equalizer {
     return this.audioCtxStatus;
   }
 
+  /**
+   * Sets a custom equalizer configuration.
+   * @param {number[]} gains - The gain values for each band.
+   */
   setCustomEQ(gains: number[]) {
     if (isValidArray(gains)) {
+      const normalizedGains = this.normalizeGains(gains);
       this.eqFilterBands.forEach((band: BiquadFilterNode, index: number) => {
-        band.gain.value = gains[index];
+        band.gain.value = normalizedGains[index];
       });
+    } else {
+      console.error('Invalid array of gains provided.');
     }
   }
 }
