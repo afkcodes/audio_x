@@ -19,7 +19,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
         duration: audioInstance?.duration,
         error: { code: null, message: '', readable: '' }
       },
-      `audiox_baseEvents_state_state_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
@@ -36,7 +36,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
         duration: audioInstance?.duration,
         error: { code: null, message: '', readable: '' }
       },
-      `audiox_baseEvents_state_state_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
@@ -49,7 +49,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
         duration: audioInstance?.duration,
         error: { code: null, message: '', readable: '' }
       },
-      `audiox_baseEvents_state_state_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
@@ -62,7 +62,7 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
         duration: audioInstance?.duration,
         error: { code: null, message: '', readable: '' }
       },
-      `audiox_baseEvents_state_state_${e.type}`
+      `audiox_baseEvents_state_${e.type}`
     );
   },
 
