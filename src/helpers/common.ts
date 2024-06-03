@@ -2,6 +2,7 @@ import { AudioX } from 'audio';
 import { ERROR_MSG_MAP } from 'constants/common';
 import { AudioEvents, AudioState, MediaTrack } from 'types';
 import { LoopMode } from 'types/audio.types';
+import { GenericMediaTrack } from 'types/cast.types';
 import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
@@ -15,7 +16,6 @@ const isValidObject = (obj: any) =>
   Object.keys(obj).length;
 
 const isValidWindow = typeof window !== undefined && window instanceof Window;
-const loadedScripts: any = {};
 
 const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
   let message = '';
@@ -91,10 +91,13 @@ export const calculateActualPlayedLength = (
   });
 };
 
+const loadedScripts: { [key: string]: boolean } = {};
+
 const loadScript = (
   url: string,
   onLoad: () => void,
-  name: string
+  name: string,
+  async: boolean = true
 ): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     if (window instanceof Window && window.document) {
@@ -103,18 +106,26 @@ const loadScript = (
         const script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = url;
-        script.async = true;
+        script.async = async;
         script.onload = () => {
+          console.log(`Script ${name} loaded successfully`);
           onLoad();
           resolve();
         };
+        script.onerror = (error) => {
+          console.error(`Error loading script ${name}:`, error);
+          reject(error);
+        };
         document.head.appendChild(script);
       } else {
+        console.log(`Script ${name} already loaded`);
         onLoad();
         resolve();
       }
     } else {
-      reject(`Window not ready unable to initialize ${name}`);
+      const errorMessage = `Window not ready, unable to initialize ${name}`;
+      console.error(errorMessage);
+      reject(errorMessage);
     }
   });
 };
@@ -226,7 +237,21 @@ const diffChecker = (d1: any, d2: any): boolean => {
   });
 };
 
+const createCastMediaTrack = (currentTrack: MediaTrack) => {
+  const castMediaTrack: GenericMediaTrack = {
+    images: currentTrack.artwork?.map((artwork) => ({ url: artwork.src })),
+    title: currentTrack.title,
+    artist: currentTrack.artist,
+    albumName: currentTrack.album,
+    subtitle: currentTrack.comment,
+    releaseDate: currentTrack.year as string
+  };
+
+  return castMediaTrack;
+};
+
 export {
+  createCastMediaTrack,
   diffChecker,
   getBufferedDuration,
   getReadableErrorMessage,

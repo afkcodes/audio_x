@@ -1,4 +1,4 @@
-import { JoinPolicy } from 'types/cast.types';
+import { CastMetaDataType, JoinPolicy } from 'types/cast.types';
 
 declare global {
   interface Window {
@@ -18,4 +18,18 @@ const CAST_JOIN_POLICY: JoinPolicy = {
   PAGE_SCOPED: 'page_scoped'
 };
 
-export { CAST_JOIN_POLICY };
+const DEFAULT_CAST_CONFIG = {
+  receiverId: 'CC1AD845',
+  joinPolicy: CAST_JOIN_POLICY.ORIGIN_SCOPED as keyof JoinPolicy
+};
+
+const CAST_META_DATA: { [key in CastMetaDataType]: number } = {
+  GENERIC: 0,
+  MOVIE: 1,
+  TV_SHOW: 2,
+  MUSIC_TRACK: 3,
+  PHOTO: 4,
+  AUDIOBOOK_CHAPTER: 5
+};
+
+export { CAST_JOIN_POLICY, CAST_META_DATA, DEFAULT_CAST_CONFIG };
