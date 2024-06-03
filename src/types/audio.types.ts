@@ -1,5 +1,6 @@
 import { HlsConfig } from 'types/hls.js';
 import { EventListenerCallbackMap } from './audioEvents.types';
+import { JoinPolicy } from './cast.types';
 
 export type InitMode = 'REACT' | 'VANILLA';
 export type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
@@ -43,6 +44,11 @@ export interface AudioInit {
   enableEQ?: boolean;
   crossOrigin?: string;
   hlsConfig?: HlsConfig | {};
+  enableCasting?: boolean;
+  castConfig?: {
+    receiverId: string;
+    joinPolicy: keyof JoinPolicy;
+  };
 }
 
 export interface AudioError {

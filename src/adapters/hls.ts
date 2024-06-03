@@ -1,12 +1,6 @@
-declare global {
-  interface Window {
-    Hls: any;
-  }
-}
-
 import { AudioX } from 'audio';
 import { URLS } from 'constants/common';
-import { HLS_EVENTS_CALLBACK_MAP } from 'events/hlsEvents';
+import { HLS_EVENTS_CALLBACK_MAP } from 'events/hlsListeners';
 import { attachHlsEventsListeners } from 'events/listeners';
 import { loadScript } from 'helpers/common';
 import { MediaTrack } from 'types';
