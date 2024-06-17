@@ -3369,7 +3369,12 @@ declare class AudioX {
     destroy(): Promise<void>;
     subscribe(eventName: string, callback: (data: any) => void, state?: any): () => void;
     addEventListener(event: keyof HTMLMediaElementEventMap, callback: (data: any) => void): void;
-    getPresets(): Preset[];
+    getPresets(): {
+        name: string;
+        id: string;
+        default: boolean;
+        gains: number[];
+    }[];
     setPreset(id: keyof Preset): void;
     setCustomEQ(gains: number[]): void;
     addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType): void;
