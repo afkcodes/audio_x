@@ -30,7 +30,8 @@ const ERROR_MSG_MAP: ErrorMessageMap = Object.freeze({
 });
 
 const URLS = {
-  HLS: 'https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js'
+  HLS: 'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.11/hls.min.js',
+  CAST: 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1'
 };
 
 export { AUDIO_X_CONSTANTS, ERROR_MSG_MAP, PLAYBACK_STATE, URLS };

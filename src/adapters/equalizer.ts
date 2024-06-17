@@ -9,7 +9,6 @@ class Equalizer {
   private audioCtx: AudioContext;
   private audioCtxStatus: EqualizerStatus;
   private eqFilterBands: BiquadFilterNode[];
-  private readonly MAX_GAIN_SUM: number = 12; // Maximum sum of gains to avoid distortion
 
   /**
    * Creates an instance of Equalizer or returns the existing instance.
@@ -121,26 +120,9 @@ class Equalizer {
       return;
     }
 
-    const normalizedGains = this.normalizeGains(preset.gains);
-
     this.eqFilterBands.forEach((band, index) => {
-      band.gain.value = normalizedGains[index];
+      band.gain.value = preset.gains[index];
     });
-  }
-
-  /**
-   * Normalizes the gain values to avoid distortion.
-   * @param {number[]} gains - The gain values to normalize.
-   * @returns {number[]} The normalized gain values.
-   * @private
-   */
-  private normalizeGains(gains: number[]): number[] {
-    const gainSum = gains.reduce((sum, gain) => sum + Math.abs(gain), 0);
-    if (gainSum > this.MAX_GAIN_SUM) {
-      const scale = this.MAX_GAIN_SUM / gainSum;
-      return gains.map((gain) => gain * scale);
-    }
-    return gains;
   }
 
   /**
@@ -168,9 +150,8 @@ class Equalizer {
    */
   setCustomEQ(gains: number[]) {
     if (isValidArray(gains)) {
-      const normalizedGains = this.normalizeGains(gains);
       this.eqFilterBands.forEach((band: BiquadFilterNode, index: number) => {
-        band.gain.value = normalizedGains[index];
+        band.gain.value = gains[index];
       });
     } else {
       console.error('Invalid array of gains provided.');
