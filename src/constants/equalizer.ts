@@ -1,4 +1,4 @@
-import { Band, Preset } from 'types/equalizer.types';
+import { Band } from 'types/equalizer.types';
 
 const bands: Band[] = [
   { frequency: 31, type: 'lowshelf', gain: 0 },
@@ -13,186 +13,121 @@ const bands: Band[] = [
   { frequency: 16000, type: 'highshelf', gain: 0 }
 ];
 
-const presets: Preset[] = [
+const presets = [
   {
-    id: 'preset_default',
     name: 'Default',
+    id: 'default',
+    default: true,
     gains: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
   },
   {
-    id: 'preset_live',
-    name: 'Live',
-    gains: [-1.0, 1.0, 2.0, 3.0, 3.0, 3.0, 2.0, 1.0, 1.0, 1.0]
-  },
-  {
-    id: 'preset_acoustic',
-    name: 'Acoustic',
-    gains: [4.0, 4.0, 3.0, 1.0, 2.0, 2.0, 3.0, 3.0, 3.0, 1.0]
-  },
-  {
-    id: 'preset_classical',
-    name: 'Classical',
-    gains: [4.0, 3.0, 2.0, 1.0, -1.0, -1.0, 0.0, 1.0, 2.0, 3.0]
-  },
-  {
-    id: 'preset_piano',
-    name: 'Piano',
-    gains: [3.0, 2.0, 0.0, 2.5, 3.0, 1.5, 3.0, 3.0, 3.0, 3.0]
-  },
-  {
-    id: 'preset_lounge',
-    name: 'Lounge',
-    gains: [-2.0, -1.0, 0.0, 1.0, 4.0, 1.0, 0.0, -1.0, 1.0, 0.5]
-  },
-  {
-    id: 'preset_spoken_word',
-    name: 'Spoken Word',
-    gains: [-2.0, 0.0, 0.0, 1.0, 4.0, 5.0, 5.0, 5.0, 2.0, 0.0]
-  },
-  {
-    id: 'preset_jazz',
-    name: 'Jazz',
-    gains: [4.0, 3.0, 1.0, 2.0, -1.0, -1.0, 0.0, 1.0, 2.0, 4.0]
-  },
-  {
-    id: 'preset_pop',
-    name: 'Pop',
-    gains: [0.5, 1.5, 2.0, 2.5, 2.0, 0.0, -0.5, -0.5, 0.5, 0.5]
-  },
-  {
-    id: 'preset_dance',
-    name: 'Dance',
-    gains: [4.0, 6.0, 4.5, 0.0, 2.0, 3.0, 5.0, 5.0, 4.5, 0.0]
-  },
-  {
-    id: 'preset_latin',
-    name: 'Latin',
-    gains: [2.5, 1.5, 0.0, 0.0, -1.5, -1.5, -1.5, 0.0, 3.0, 4.0]
-  },
-  {
-    id: 'preset_rnb',
-    name: 'RnB',
-    gains: [3.0, 5.0, 4.5, 1.0, -2.0, -1.5, 3.0, 3.0, 3.5, 4.0]
-  },
-  {
-    id: 'preset_hiphop',
-    name: 'HipHop',
-    gains: [5.0, 4.0, 1.0, 2.0, -1.0, -0.5, 1.0, -0.5, 2.0, 3.0]
-  },
-  {
-    id: 'preset_electronic',
-    name: 'Electronic',
-    gains: [4.0, 3.5, 1.0, 0.0, -2.0, 2.0, 1.0, 1.5, 4.0, 5.0]
-  },
-  {
-    id: 'preset_techno',
-    name: 'Techno',
-    gains: [3.0, 2.0, 0.0, -1.5, -1.5, 0.0, 3.0, 4.0, 4.0, 4.0]
-  },
-  {
-    id: 'preset_deep',
-    name: 'Deep',
-    gains: [5.0, 4.0, 1.0, 0.5, 3.0, 2.0, 1.0, -2.0, -4.0, -5.0]
-  },
-  {
-    id: 'preset_club',
     name: 'Club',
-    gains: [0.0, 0.0, 3.0, 2.0, 2.0, 2.0, 1.0, 0.0, 0.0, 0.0]
+    id: 'club',
+    default: true,
+    gains: [0.0, 0.0, 4.8, 3.36, 3.36, 3.36, 1.92, 0.0, 0.0, 0.0]
   },
   {
-    id: 'preset_rock',
-    name: 'Rock',
-    gains: [6.0, 5.0, 4.0, 1.0, -0.5, 0.0, 0.5, 2.0, 4.0, 5.0]
+    name: 'Live',
+    id: 'live',
+    default: true,
+    gains: [-2.88, 0.0, 2.4, 3.36, 3.36, 3.36, 2.4, 1.44, 1.44, 1.44]
   },
   {
-    id: 'preset_rock_soft',
-    name: 'Rock Soft',
-    gains: [1.5, 0.0, 0.0, -0.5, 0.0, 1.0, 3.0, 4.0, 4.0, 5.0]
+    name: 'Party',
+    id: 'Party',
+    default: true,
+    gains: [4.32, 4.32, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.32, 4.32]
   },
   {
-    id: 'preset_ska',
+    name: 'Pop',
+    id: 'pop',
+    default: true,
+    gains: [0.96, 2.88, 4.32, 4.8, 3.36, 0.0, -1.44, -1.44, 0.96, 0.96]
+  },
+  {
+    name: 'Soft',
+    id: 'soft',
+    default: true,
+    gains: [2.88, 0.96, 0.0, -1.44, 0.0, 2.4, 4.8, 5.76, 6.72, 7.2]
+  },
+  {
     name: 'Ska',
-    gains: [-0.5, -1.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 4.0]
+    id: 'ska',
+    default: true,
+    gains: [-1.44, -2.88, -2.4, 0.0, 2.4, 3.36, 5.28, 5.76, 6.72, 5.76]
   },
   {
-    id: 'preset_reggae',
     name: 'Reggae',
-    gains: [0.0, 0.0, 0.0, -1.5, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0]
+    id: 'reggae',
+    default: true,
+    gains: [0.0, 0.0, 0.0, -3.36, 0.0, 3.84, 3.84, 0.0, 0.0, 0.0]
+  },
+
+  {
+    name: 'Rock',
+    id: 'rock',
+    default: true,
+    gains: [4.8, 2.88, -3.36, -4.8, -1.92, 2.4, 5.28, 6.72, 6.72, 6.72]
   },
   {
-    id: 'preset_country',
-    name: 'Country',
-    gains: [2.0, 2.0, 1.0, 0.0, -1.0, 0.0, 2.0, 3.0, 3.0, 3.0]
+    name: 'Dance',
+    id: 'dance',
+    default: true,
+    gains: [5.76, 4.32, 1.44, 0.0, 0.0, -3.36, -4.32, -4.32, 0.0, 0.0]
   },
   {
-    id: 'preset_funk',
-    name: 'Funk',
-    gains: [3.0, 4.0, 3.0, 0.0, -1.0, 0.0, 2.0, 3.0, 4.0, 4.0]
+    name: 'Techno',
+    id: 'techno',
+    default: true,
+    gains: [4.8, 3.36, 0.0, -3.36, -2.88, 0.0, 4.8, 5.76, 5.76, 5.28]
   },
   {
-    id: 'preset_blues',
-    name: 'Blues',
-    gains: [2.0, 1.0, 0.0, -1.0, 0.0, 1.0, 2.0, 3.0, 3.0, 3.0]
+    name: 'Headphones',
+    id: 'headphones',
+    default: true,
+    gains: [2.88, 6.72, 3.36, -1.92, -1.44, 0.96, 2.88, 5.76, 7.68, 8.64]
   },
   {
-    id: 'preset_metal',
-    name: 'Metal',
-    gains: [6.0, 5.0, 4.0, 2.0, 1.0, 1.0, 0.0, 2.0, 3.0, 4.0]
+    name: 'Soft rock',
+    id: 'soft_rock',
+    default: true,
+    gains: [2.4, 2.4, 1.44, 0.0, -2.4, -3.36, -1.92, 0.0, 1.44, 5.28]
   },
   {
-    id: 'preset_indie',
-    name: 'Indie',
-    gains: [2.0, 2.0, 2.0, 1.0, 0.0, -1.0, -2.0, 0.0, 3.0, 3.0]
+    name: 'Classical',
+    id: 'classical',
+    default: true,
+    gains: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -4.32, -4.32, -4.32, -5.76]
   },
   {
-    id: 'preset_chill',
-    name: 'Chill',
-    gains: [1.0, 1.0, 0.0, -1.0, -2.0, -1.0, 1.0, 2.0, 3.0, 2.0]
+    name: 'Large Hall',
+    id: 'large_hall',
+    default: true,
+    gains: [6.24, 6.24, 3.36, 3.36, 0.0, -2.88, -2.88, -2.88, 0.0, 0.0]
   },
   {
-    id: 'preset_world',
-    name: 'World',
-    gains: [2.0, 2.0, 0.0, -1.5, -1.0, 1.0, 3.0, 3.0, 4.0, 3.0]
+    name: 'Full Bass',
+    id: 'full_base',
+    default: true,
+    gains: [4.8, 5.76, 5.76, 3.36, 0.96, -2.4, -4.8, -6.24, -6.72, -6.72]
   },
   {
-    id: 'preset_alternative',
-    name: 'Alternative',
-    gains: [2.0, 2.0, 1.0, 0.0, -1.0, -2.0, 1.0, 3.0, 4.0, 3.0]
+    name: 'Full Treble',
+    id: 'full_treble',
+    default: true,
+    gains: [-5.76, -5.76, -5.76, -2.4, 1.44, 6.72, 9.6, 9.6, 9.6, 10.08]
   },
   {
-    id: 'preset_ambient',
-    name: 'Ambient',
-    gains: [0.0, -1.0, -2.0, -2.5, -2.0, 0.0, 1.0, 2.0, 2.0, 2.0]
+    name: 'Laptop Speakers',
+    id: 'laptop_speakers',
+    default: true,
+    gains: [2.88, 6.72, 3.36, -1.92, -1.44, 0.96, 2.88, 5.76, 7.68, 8.64]
   },
   {
-    id: 'preset_mellow',
-    name: 'Mellow',
-    gains: [1.0, 1.0, 0.0, -1.0, -2.0, -1.0, 1.0, 2.0, 2.0, 1.0]
-  },
-  {
-    id: 'preset_grunge',
-    name: 'Grunge',
-    gains: [4.0, 3.0, 3.0, 2.0, 1.0, 0.0, 0.0, 2.0, 3.0, 4.0]
-  },
-  {
-    id: 'preset_soul',
-    name: 'Soul',
-    gains: [3.0, 3.0, 2.0, 1.0, 0.0, -1.0, 0.0, 2.0, 3.0, 3.0]
-  },
-  {
-    id: 'preset_folk',
-    name: 'Folk',
-    gains: [2.0, 1.0, 0.0, -1.0, -2.0, -1.0, 1.0, 2.0, 3.0, 2.0]
-  },
-  {
-    id: 'preset_trap',
-    name: 'Trap',
-    gains: [6.0, 5.0, 3.0, 1.0, -2.0, -1.0, 1.0, 3.0, 4.0, 5.0]
-  },
-  {
-    id: 'preset_dubstep',
-    name: 'Dubstep',
-    gains: [5.0, 4.0, 3.0, 2.0, 2.0, 1.0, 1.0, 2.0, 3.0, 4.0]
+    name: 'Full Bass & Treble',
+    id: 'bass_treble',
+    default: true,
+    gains: [4.32, 3.36, 0.0, -4.32, -2.88, 0.96, 4.8, 6.72, 7.2, 7.2]
   }
 ];
 
