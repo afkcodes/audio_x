@@ -120,11 +120,11 @@ const loadScript = (
 
 const handleQueuePlayback = () => {
   const audio = new AudioX();
-  const queue = audio.getQueue();
   let hasEnded = false;
 
   const audioStateListener = (state: AudioState) => {
     if (state.playbackState === 'ended' && !hasEnded) {
+      const queue = audio.getQueue();
       hasEnded = true;
       if (queue && isValidArray(queue)) {
         audio.playNext();
