@@ -35,10 +35,9 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 - Casting support
 - Dash media playback
 - DRM
-- ~~Equalizer~~ [✓] Done
-- Updates to APIs for better DX
-- React hooks to easily get started with React.
 - Ads Support
+- ~~Equalizer~~ [✓] Done
+- ~~Updates to APIs for better DX~~ [✓] Done
 - ~~Queue Support~~ [✓] Done.
 
 ### Installation
@@ -104,8 +103,8 @@ audio.play();
 audio.pause();
 
 // Get the Audio State
-audio.subscribe("AUDIO_X_STATE", (data: AudioState) => {
-  console.log(data);
+audio.subscribe("AUDIO_X_STATE", (audioState: AudioState) => {
+  console.log(audioState);
 });
 
 // Sample Audio State
@@ -270,6 +269,10 @@ audio.addMediaAndPlay(null, async (currentTrack: MediaTrack) => {
 // To add a single track to queue
 
 audio.addToQueue(track);
+
+// To add a multiple tracks to queue
+
+audio.addToQueue([track1, track2, track3]);
 ```
 
 ```JS
@@ -288,6 +291,18 @@ audio.playNext();
 // To play Previous in Queue
 
 audio.playPrevious();
+```
+
+```JS
+// To seek to a particular position
+
+audio.seek(position); // position is basically time in seconds
+```
+
+```JS
+// To seek by to a particular time range
+
+audio.seekBy(time); // time range in seconds to seek
 ```
 
 ### Author
