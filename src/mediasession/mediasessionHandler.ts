@@ -10,25 +10,42 @@ export const updateMetaData = (data: any) => {
 };
 
 export const attachMediaSessionHandlers = () => {
+  const audio = new AudioX();
   if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => {
       const audioInstance = AudioX.getAudioInstance();
       audioInstance.play();
     });
+
     navigator.mediaSession.setActionHandler('pause', () => {
       const audioInstance = AudioX.getAudioInstance();
       audioInstance.pause();
     });
+
+    // Only add next and previous handler if there is a valid queue
+    if (audio.getQueue().length) {
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        audio.playPrevious();
+      });
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        audio.playNext();
+      });
+    }
   }
 };
 
 export const updatePositionState = () => {
-  ChangeNotifier.listen('AUDIO_X_STATE', (data: AudioState) => {
-    if (data?.duration && data?.playbackRate && data?.progress) {
+  ChangeNotifier.listen('AUDIO_X_STATE', (audioState: AudioState) => {
+    if (
+      audioState?.duration &&
+      audioState?.playbackRate &&
+      audioState?.progress
+    ) {
       navigator.mediaSession.setPositionState({
-        duration: data.duration,
-        playbackRate: data.playbackRate,
-        position: data.progress
+        duration: audioState.duration,
+        playbackRate: audioState.playbackRate,
+        position: audioState.progress
       });
     }
   });

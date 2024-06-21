@@ -38,6 +38,7 @@ class AudioX {
   private eqStatus: EqualizerStatus = 'IDEAL';
   private isEqEnabled: boolean = false;
   private eqInstance: Equalizer;
+  private showNotificationsActions: boolean = false;
 
   constructor() {
     if (AudioX._instance) {
@@ -112,6 +113,7 @@ class AudioX {
     }
 
     if (showNotificationActions) {
+      this.showNotificationsActions = true;
       attachMediaSessionHandlers();
     }
 
@@ -211,6 +213,7 @@ class AudioX {
       this._fetchFn = fetchFn;
       await fetchFn(currentTrack as MediaTrack);
     }
+
     if (this._queue && isValidArray(this._queue)) {
       this._currentQueueIndex = this._queue.findIndex(
         (track) => track.id === currentTrack?.id
@@ -294,6 +297,13 @@ class AudioX {
     }
   }
 
+  seekBy(time: number) {
+    if (audioInstance && audioInstance.currentTime) {
+      const currentProgress = audioInstance.currentTime;
+      audioInstance.currentTime = currentProgress + time;
+    }
+  }
+
   async destroy() {
     if (audioInstance) {
       await this.reset();
@@ -343,6 +353,10 @@ class AudioX {
         break;
     }
     handleQueuePlayback();
+    // Attaching MediaSession Handler again as this will make sure the next and previous button show up in notification
+    if (this.showNotificationsActions) {
+      attachMediaSessionHandlers();
+    }
   }
 
   playNext() {
@@ -368,6 +382,16 @@ class AudioX {
   clearQueue() {
     if (this._queue && isValidArray(this._queue)) {
       this._queue = [];
+    }
+  }
+
+  addToQueue(mediaTracks: MediaTrack | MediaTrack[]) {
+    if (this._queue && isValidArray(this._queue)) {
+      if (Array.isArray(mediaTracks)) {
+        this._queue = [...this._queue, ...mediaTracks];
+      } else {
+        this._queue.push(mediaTracks);
+      }
     }
   }
 
