@@ -1,6 +1,6 @@
 {
   "name": "audio_x",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "The audio player for the gen-x",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

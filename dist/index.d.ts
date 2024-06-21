@@ -3353,6 +3353,7 @@ declare class AudioX {
     private eqStatus;
     private isEqEnabled;
     private eqInstance;
+    private showNotificationsActions;
     constructor();
     init(initProps: AudioInit): Promise<void>;
     addMedia(mediaTrack: MediaTrack): Promise<void>;
@@ -3366,6 +3367,7 @@ declare class AudioX {
     setPlaybackRate(playbackRate: PlaybackRate): void;
     mute(): void;
     seek(time: number): void;
+    seekBy(time: number): void;
     destroy(): Promise<void>;
     subscribe(eventName: string, callback: (data: any) => void, state?: any): () => void;
     addEventListener(event: keyof HTMLMediaElementEventMap, callback: (data: any) => void): void;
@@ -3381,6 +3383,7 @@ declare class AudioX {
     playNext(): void;
     playPrevious(): void;
     clearQueue(): void;
+    addToQueue(mediaTracks: MediaTrack | MediaTrack[]): void;
     removeFromQueue(mediaTrack: MediaTrack): void;
     getQueue(): MediaTrack[];
     get id(): string | null;
