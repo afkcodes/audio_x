@@ -120,11 +120,11 @@ const loadScript = (
 
 const handleQueuePlayback = () => {
   const audio = new AudioX();
-  const queue = audio.getQueue();
   let hasEnded = false;
 
   const audioStateListener = (state: AudioState) => {
     if (state.playbackState === 'ended' && !hasEnded) {
+      const queue = audio.getQueue();
       hasEnded = true;
       if (queue && isValidArray(queue)) {
         audio.playNext();
@@ -136,6 +136,17 @@ const handleQueuePlayback = () => {
   };
 
   ChangeNotifier.listen('AUDIO_STATE', audioStateListener);
+};
+
+const getBufferedDuration = (audioInstance: HTMLAudioElement) => {
+  const { buffered } = audioInstance;
+  let bufferedDuration = 0;
+
+  for (let i = 0; i < buffered.length; i++) {
+    bufferedDuration += buffered.end(i) - buffered.start(i);
+  }
+
+  return bufferedDuration;
 };
 
 const shuffle = <T>(array: T[]): T[] => {
@@ -151,6 +162,7 @@ const shuffle = <T>(array: T[]): T[] => {
 };
 
 export {
+  getBufferedDuration,
   getReadableErrorMessage,
   handleQueuePlayback,
   isValidArray,
