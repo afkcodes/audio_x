@@ -68,28 +68,35 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
 
   CAN_PLAY: (e: Event) => {
     console.log('STATUS', e.type);
-
-    notifier.notify(
-      'AUDIO_STATE',
-      {
-        playbackState: PLAYBACK_STATE.READY,
-        error: { code: null, message: '', readable: '' }
-      },
-      `audiox_baseEvents_state_${e.type}`
-    );
-  },
-
-  CAN_PLAY_THROUGH: (e: Event) => {
     const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
-    console.log('STATUS', e.type);
 
     notifier.notify(
       'AUDIO_STATE',
       {
         playbackState:
-          audioState.playbackState === 'playing'
-            ? PLAYBACK_STATE.PLAYING // fix for live streams as canplaythrough event is can be behave weirdly as there is no known end to the media
+          audioState.playbackState === 'paused'
+            ? PLAYBACK_STATE.PAUSED
             : PLAYBACK_STATE.READY,
+        error: { code: null, message: '', readable: '' }
+      } as AudioState,
+      `audiox_baseEvents_state_${e.type}`
+    );
+  },
+
+  CAN_PLAY_THROUGH: (e: Event, audioInstance: HTMLAudioElement) => {
+    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
+    const isPaused = audioInstance.paused;
+    console.log('STATUS', e.type);
+
+    // below we check if the audio was already in paused state then we keep it as paused instead going to ready this make sure ready is fired only on the first load.
+    notifier.notify(
+      'AUDIO_STATE',
+      {
+        playbackState: isPaused
+          ? PLAYBACK_STATE.PAUSED
+          : audioState.playbackState === 'playing'
+          ? PLAYBACK_STATE.PLAYING // fix for live streams as canplaythrough event is can be behave weirdly as there is no known end to the media
+          : PLAYBACK_STATE.READY,
         error: { code: null, message: '', readable: '' }
       },
       `audiox_baseEvents_state_${e.type}`
@@ -205,6 +212,22 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
   VOLUME_CHANGE: (e: Event) => {
     console.log('STATUS', e.type);
     notifier.notify('AUDIO_STATE', {}, `audiox_baseEvents_state`);
+  },
+
+  SEEKED: (e, audioInstance) => {
+    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
+    notifier.notify(
+      'AUDIO_STATE',
+      {
+        playbackState:
+          audioState.playbackState === 'paused'
+            ? 'paused'
+            : audioState.playbackState,
+        progress: audioInstance?.currentTime,
+        error: { code: null, message: '', readable: '' }
+      } as AudioState,
+      `audiox_baseEvents_state_${e.type}`
+    );
   }
 };
 
