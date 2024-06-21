@@ -138,6 +138,17 @@ const handleQueuePlayback = () => {
   ChangeNotifier.listen('AUDIO_STATE', audioStateListener);
 };
 
+const getBufferedDuration = (audioInstance: HTMLAudioElement) => {
+  const { buffered } = audioInstance;
+  let bufferedDuration = 0;
+
+  for (let i = 0; i < buffered.length; i++) {
+    bufferedDuration += buffered.end(i) - buffered.start(i);
+  }
+
+  return bufferedDuration;
+};
+
 const shuffle = <T>(array: T[]): T[] => {
   const shuffledArray = [...array];
 
@@ -151,6 +162,7 @@ const shuffle = <T>(array: T[]): T[] => {
 };
 
 export {
+  getBufferedDuration,
   getReadableErrorMessage,
   handleQueuePlayback,
   isValidArray,
