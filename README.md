@@ -2,8 +2,7 @@
 
 ---
 
-A simple audio player for all your audio playing needs, based on HTML5 audio element.Supports
-most popular formats.
+A simple audio player for all your audio playing needs, based on the HTML5 audio element. Supports most popular formats.
 
 | Formats     | Support |
 | ----------- | ------- |
@@ -12,21 +11,21 @@ most popular formats.
 | .mp4        | [✓]     |
 | .m3u8 (hls) | [✓]     |
 
-For a comprehensive list of formats support visit [MDN audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs)
+For a comprehensive list of supported formats, visit the [MDN audio codec guide](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_codecs).
 
 ## Features
 
 ---
 
 - Supports all modern browsers.
-- Light Weight just 18kb.
-- Zero dependencies, and type-safe.
-- No Built in UI to have full control over the player, bring in your own UI.
+- Lightweight, just 18kb.
+- Zero dependencies and type-safe.
+- No built-in UI, allowing full control over the player. Bring your own UI.
 - Simple API to use.
-- Works on React no external package needed.
-- Access to audio element to use your own event listeners or use the default listeners to get up & running in a ziffy.
-- MediaSession Support, shows notification and lock-screen actions on mobile devices.
-- Playlog - Get actual playtime of a track.
+- Works with React, no external packages needed.
+- Access to the audio element to use your own event listeners or the default listeners to get up and running quickly.
+- MediaSession support, shows notification and lock-screen actions on mobile devices.
+- Playlog - Get the actual playtime of a track.
 
 ### Upcoming Features
 
@@ -35,10 +34,10 @@ For a comprehensive list of formats support visit [MDN audio codec guide](https:
 - Casting support
 - Dash media playback
 - DRM
-- Ads Support
+- Ads support
 - ~~Equalizer~~ [✓] Done
 - ~~Updates to APIs for better DX~~ [✓] Done
-- ~~Queue Support~~ [✓] Done.
+- ~~Queue support~~ [✓] Done
 
 ### Installation
 
@@ -55,25 +54,23 @@ npm install audio_x
 ```JS
 import { AUDIO_STATE, AudioState, AudioX, MediaTrack } from "audio_x";
 
-
-// create an audio_x Instance
+// Create an audio_x instance
 const audio = new AudioX();
-
 
 // Initialize audio_x
 audio.init({
-  autoPlay: false,  // should auto play
-  useDefaultEventListeners: true, // use Default event listeners
-  showNotificationActions: true, // show notifications on devices
-  preloadStrategy: "auto",   // preloading strategy
-  playbackRate: 1,  // set playback rate
-  enablePlayLog: true,  // enable playlog support
-  enableHls: true,    // enable hls support
-  hlsConfig: { backBufferLength: 2000 } // Hls init config
+  autoPlay: false,  // Should autoplay
+  useDefaultEventListeners: true, // Use default event listeners
+  showNotificationActions: true, // Show notifications on devices
+  preloadStrategy: "auto",   // Preloading strategy
+  playbackRate: 1,  // Set playback rate
+  enablePlayLog: true,  // Enable playlog support
+  enableHls: true,    // Enable HLS support
+  hlsConfig: { backBufferLength: 2000 } // HLS init config
 });
 
-// create track
-const track:MediaTrack ={
+// Create a track
+const track: MediaTrack = {
   id: 1,
   artwork: [
     {
@@ -82,8 +79,7 @@ const track:MediaTrack ={
       sizes: "512x512",
     },
   ],
-  source:
-    "https://example.com/stream.mp3",
+  source: "https://example.com/stream.mp3",
   title: "My Awesome Song",
   album: "Awesome Album",
   artist: "Amazing Artist",
@@ -93,21 +89,21 @@ const track:MediaTrack ={
   year: 2023,
 };
 
-// add a track
+// Add a track
 audio.addMedia(track);
 
-// play
+// Play
 audio.play();
 
-//pause
+// Pause
 audio.pause();
 
-// Get the Audio State
+// Get the audio state
 audio.subscribe("AUDIO_X_STATE", (audioState: AudioState) => {
   console.log(audioState);
 });
 
-// Sample Audio State
+// Sample audio state
 {
   "playbackState": "paused",
   "duration": null,
@@ -142,12 +138,11 @@ audio.subscribe("AUDIO_X_STATE", (audioState: AudioState) => {
 }
 ```
 
-### Getting the audio Instance
+### Getting the audio instance
 
 ---
 
-audio_x exports audioInstance, through a static method, so that you can add your own event-listeners
-directly on the HTML5 audio element.
+audio_x exports an audio instance through a static method, so you can add your own event listeners directly to the HTML5 audio element.
 
 ```JS
 const instance = AudioX.getAudioInstance();
@@ -162,8 +157,7 @@ There are two ways to attach custom event listeners.
 #### Method 1
 
 ```JS
-
-// Create an object of Events and callbacks as below
+// Create an object of events and callbacks as below
 
 const eventListenerMap: EventListenerCallbackMap = {
   CAN_PLAY_THROUGH: (e, audioInstance, isPlayLogEnabled) => {
@@ -175,41 +169,40 @@ const eventListenerMap: EventListenerCallbackMap = {
 };
 
 audio.init({
-    autoPlay: false,
-    useDefaultEventListeners: false, // set default event listener to false
-    mode: "REACT",
-    showNotificationActions: true,
-    customEventListeners: eventListenerMap, // provide custom event listeners at init
-    preloadStrategy: "auto",
-    playbackRate: 1,
-    enableEQ: true,
-    enablePlayLog: true,
-    enableHls: true,
-  });
-
+  autoPlay: false,
+  useDefaultEventListeners: false, // Set default event listener to false
+  mode: "REACT",
+  showNotificationActions: true,
+  customEventListeners: eventListenerMap, // Provide custom event listeners at init
+  preloadStrategy: "auto",
+  playbackRate: 1,
+  enableEQ: true,
+  enablePlayLog: true,
+  enableHls: true,
+});
 ```
 
-> **NOTE:** &nbsp; _if custom event listeners are provided at init it will take priority even if useDefaultEventListeners is set to true, to use default event listener set useDefaultEventListeners to true and customEventListeners to null. Once custom event listener is added AUDIO_X_STATE will not not be fired, in favor of custom event listeners. All the events should be handled manually, This method only allows audio events._
+> **NOTE:** &nbsp; _If custom event listeners are provided at init, they will take priority even if useDefaultEventListeners is set to true. To use the default event listener, set useDefaultEventListeners to true and customEventListeners to null. Once a custom event listener is added, AUDIO_X_STATE will not be fired in favor of custom event listeners. All events should be handled manually. This method only allows audio events._
 
 #### Method 2
 
 ```JS
- audio.addEventListener("pause", (data: any) => {
-    console.log(data);
-  });
+audio.addEventListener("pause", (data: any) => {
+  console.log(data);
+});
 ```
 
-> **NOTE:** _This method allows adding events directly to audio element, and all the events can be added to the audio element, When using this set useDefaultEventListeners to false and customEventListeners to null to reduce un-necessary events being fired.All the events should be handled manually_
+> **NOTE:** _This method allows adding events directly to the audio element, and all events can be added to the audio element. When using this, set useDefaultEventListeners to false and customEventListeners to null to reduce unnecessary events being fired. All events should be handled manually._
 
 ### Setting up the equalizer
 
 ---
 
 ```JS
-// Getting the Presets
-const presets = audio.getPresets(); // will return array of pre-tuned filters
+// Getting the presets
+const presets = audio.getPresets(); // Will return an array of pre-tuned filters
 
-// Sample Preset
+// Sample preset
 [
   {
     "id": "preset_default",
@@ -218,29 +211,29 @@ const presets = audio.getPresets(); // will return array of pre-tuned filters
   }
 ]
 
-// Setting a Preset
+// Setting a preset
 audio.setPreset(id);
 
-// example:
-audio.setPreset('preset_default');  // will set default preset
+// Example:
+audio.setPreset('preset_default');  // Will set default preset
 
-
-// Custom EQ Setting
+// Custom EQ setting
 
 const gainsValue = preset[index].gains;
-gainsValue[index] = value;  // value ranges from -10 to 10
+gainsValue[index] = value;  // Value ranges from -10 to 10
 audio.setCustomEQ(gainsValue);
 
 // Example
-const gainsValue = preset[0].gains;   // default preset gains [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-gainsValue[0] = 2.5;   // updated gain values [2.5, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+const gainsValue = preset[0].gains;   // Default preset gains [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+gainsValue[0] = 2.5;   // Updated gain values [2.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 audio.setCustomEQ(gainsValue);
-
 ```
 
-### Adding and Handling Queue
+### Adding and handling the queue
 
-// Audio_x allows you to play audio in queue.
+---
+
+Audio_x allows you to play audio in a queue.
 
 ```JS
 // To add a queue
@@ -248,47 +241,49 @@ audio.setCustomEQ(gainsValue);
 const tracks = [track_1, track_2, ...other_tracks]
 audio.addQueue(tracks, "DEFAULT");
 
-NOTE: addQueue takes two parameters one is tracks array and second is playback type i.e "DEFAULT" | "REVERSE" | "SHUFFLE"
-if no playbackType is passed audio_x will play it as DEFAULT
+// NOTE: addQueue takes two parameters: one is the tracks array, and the second is playback type, i.e., "DEFAULT" | "REVERSE" | "SHUFFLE".
+// If no playbackType is passed, audio_x will play it as DEFAULT.
 
-// To Play the Queue from the beginning, call addMediaAndPlay like below.
+// To play the queue from the beginning, call addMediaAndPlay like below.
 
 audio.addMediaAndPlay();
 
-// if you are fetching something dynamically to play audio, such as source of the audio you can do it like below.
+// If you are fetching something dynamically to play audio, such as the source of the audio, you can do it like below.
 
 audio.addMediaAndPlay(null, async (currentTrack: MediaTrack) => {
-        const res = await fetch('url);
-        currentTrack.source = res.data.url;
-      });
+  const res = await fetch('url');
+  currentTrack.source = res.data.url;
+});
 
-// This will make sure that the above function gets called before every audio that plays in a queue.
+// This will ensure that the above function gets called before every audio that plays in a queue.
 ```
 
 ```JS
-// To add a single track to queue
+// To add a single track to the queue
 
 audio.addToQueue(track);
+```
 
-// To add a multiple tracks to queue
+```JS
+// To add multiple tracks to the queue
 
 audio.addToQueue([track1, track2, track3]);
 ```
 
 ```JS
-// To clear Queue
+// To clear the queue
 
 audio.clearQueue();
 ```
 
 ```JS
-// To play Next in Queue
+// To play the next track in the queue
 
 audio.playNext();
 ```
 
 ```JS
-// To play Previous in Queue
+// To play the previous track in the queue
 
 audio.playPrevious();
 ```
@@ -296,13 +291,13 @@ audio.playPrevious();
 ```JS
 // To seek to a particular position
 
-audio.seek(position); // position is basically time in seconds
+audio.seek(position); // Position is basically time in seconds
 ```
 
 ```JS
-// To seek by to a particular time range
+// To seek by a particular time range
 
-audio.seekBy(time); // time range in seconds to seek
+audio.seekBy(time); // Time range in seconds to seek
 ```
 
 ### Author
@@ -313,5 +308,4 @@ audio.seekBy(time); // time range in seconds to seek
 
 ### Contributions
 
-> if you like this and find any issues please do raise a bug, or if you find working on audio stuff interesting,
-> Do raise a PR for a feature or a fix.
+> If you like this and find any issues, please raise a bug, or if you find working on audio stuff interesting, do raise a PR for a feature or a fix.
