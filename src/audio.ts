@@ -213,12 +213,6 @@ class AudioX {
       this._fetchFn = fetchFn;
       await fetchFn(currentTrack as MediaTrack);
     }
-
-    if (this._queue && isValidArray(this._queue)) {
-      this._currentQueueIndex = this._queue.findIndex(
-        (track) => track.id === currentTrack?.id
-      );
-    }
     try {
       if (currentTrack) {
         this.addMedia(currentTrack).then(() => {
@@ -341,6 +335,7 @@ class AudioX {
   }
 
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
+    this.clearQueue();
     const playerQueue = isValidArray(queue) ? queue.slice() : [];
     switch (playbackType) {
       case 'DEFAULT':
@@ -387,6 +382,7 @@ class AudioX {
   clearQueue() {
     if (this._queue && isValidArray(this._queue)) {
       this._queue = [];
+      this._currentQueueIndex = 0;
     }
   }
 
