@@ -9,6 +9,7 @@ class Equalizer {
   private audioCtx: AudioContext;
   private audioCtxStatus: EqualizerStatus;
   private eqFilterBands: BiquadFilterNode[];
+  private bassBoostFilter: BiquadFilterNode;
 
   /**
    * Creates an instance of Equalizer or returns the existing instance.
@@ -31,10 +32,13 @@ class Equalizer {
    * @private
    */
   private initializeAudioContext() {
+    const audioContextOptions = { latencyHint: 'playback', sampleRate: 44100 };
     if (typeof AudioContext !== 'undefined') {
-      this.audioCtx = new AudioContext();
+      this.audioCtx = new AudioContext(audioContextOptions);
     } else if (typeof (window as any).webkitAudioContext !== 'undefined') {
-      this.audioCtx = new (window as any).webkitAudioContext();
+      this.audioCtx = new (window as any).webkitAudioContext(
+        audioContextOptions
+      );
     } else {
       console.error('Web Audio API is not supported in this browser.');
     }
@@ -82,7 +86,13 @@ class Equalizer {
       });
 
       const gainNode = this.audioCtx.createGain();
-      gainNode.gain.value = 1; // TODO: Normalize sound output
+      gainNode.gain.value = 1; // Normalize sound output
+
+      // Create the bass boost filter
+      this.bassBoostFilter = this.audioCtx.createBiquadFilter();
+      this.bassBoostFilter.type = 'lowshelf';
+      this.bassBoostFilter.frequency.value = 80;
+      this.bassBoostFilter.gain.value = 0;
 
       audioSource.connect(equalizerBands[0]);
 
@@ -90,7 +100,8 @@ class Equalizer {
         equalizerBands[i].connect(equalizerBands[i + 1]);
       }
 
-      equalizerBands[equalizerBands.length - 1].connect(gainNode);
+      equalizerBands[equalizerBands.length - 1].connect(this.bassBoostFilter);
+      this.bassBoostFilter.connect(gainNode);
       gainNode.connect(this.audioCtx.destination);
 
       this.audioCtxStatus = 'ACTIVE';
@@ -120,8 +131,10 @@ class Equalizer {
       return;
     }
 
+    const currentTime = this.audioCtx.currentTime;
     this.eqFilterBands.forEach((band, index) => {
-      band.gain.value = preset.gains[index];
+      const targetGain = preset.gains[index];
+      band.gain.linearRampToValueAtTime(targetGain, currentTime + 0.015);
     });
   }
 
@@ -150,11 +163,29 @@ class Equalizer {
    */
   setCustomEQ(gains: number[]) {
     if (isValidArray(gains)) {
+      const currentTime = this.audioCtx.currentTime;
       this.eqFilterBands.forEach((band: BiquadFilterNode, index: number) => {
-        band.gain.value = gains[index];
+        band.gain.linearRampToValueAtTime(gains[index], currentTime + 0.015);
       });
     } else {
       console.error('Invalid array of gains provided.');
+    }
+  }
+
+  /**
+   * Enables or disables bass boost.
+   * @param {boolean} enable - Whether to enable or disable bass boost.
+   * @param {number} gain - The gain value for bass boost.
+   */
+  setBassBoost(enable: boolean, gain: number = 6) {
+    const currentTime = this.audioCtx.currentTime;
+    if (enable) {
+      this.bassBoostFilter.gain.linearRampToValueAtTime(
+        gain,
+        currentTime + 0.015
+      );
+    } else {
+      this.bassBoostFilter.gain.linearRampToValueAtTime(0, currentTime + 0.015);
     }
   }
 }

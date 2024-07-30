@@ -336,6 +336,10 @@ class AudioX {
     this.eqInstance.setCustomEQ(gains);
   }
 
+  setBassBoost(enabled: boolean, boost: number) {
+    this.eqInstance.setBassBoost(enabled, boost);
+  }
+
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
     const playerQueue = isValidArray(queue) ? queue.slice() : [];
     switch (playbackType) {
@@ -353,7 +357,8 @@ class AudioX {
         break;
     }
     handleQueuePlayback();
-    // Attaching MediaSession Handler again as this will make sure the next and previous button show up in notification
+    /* Attaching MediaSession Handler again as this will make sure that
+     the next and previous button show up in notification */
     if (this.showNotificationsActions) {
       attachMediaSessionHandlers();
     }

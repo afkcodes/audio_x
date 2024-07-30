@@ -126,7 +126,7 @@ const handleQueuePlayback = () => {
     if (state.playbackState === 'ended' && !hasEnded) {
       const queue = audio.getQueue();
       hasEnded = true;
-      if (queue && isValidArray(queue)) {
+      if (queue && isValidArray(queue) && hasEnded) {
         audio.playNext();
       }
     }
@@ -161,7 +161,49 @@ const shuffle = <T>(array: T[]): T[] => {
   return shuffledArray;
 };
 
+const diffChecker = (d1: any, d2: any): boolean => {
+  if (d1 === null && d2 === null) {
+    return true;
+  }
+
+  if (d1 === null || d2 === null) {
+    return false;
+  }
+
+  if (typeof d1 !== typeof d2) {
+    return false;
+  }
+
+  if (typeof d1 !== 'object') {
+    return d1 === d2;
+  }
+
+  if (Array.isArray(d1) && Array.isArray(d2)) {
+    if (d1.length !== d2.length) {
+      return false;
+    }
+
+    return d1.every((item, index) => diffChecker(item, d2[index]));
+  }
+
+  const keys1 = Object.keys(d1);
+  const keys2 = Object.keys(d2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  return keys1.every((key) => {
+    if (!keys2.includes(key)) {
+      return false;
+    }
+
+    return diffChecker(d1[key], d2[key]);
+  });
+};
+
 export {
+  diffChecker,
   getBufferedDuration,
   getReadableErrorMessage,
   handleQueuePlayback,
