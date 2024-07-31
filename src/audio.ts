@@ -118,7 +118,10 @@ class AudioX {
     }
 
     if (enableEQ) {
-      this.isEqEnabled = enableEQ;
+      this.attachEq();
+      if (this.eqInstance) {
+        this.isEqEnabled = enableEQ;
+      }
     }
 
     if (enableHls) {
@@ -130,6 +133,14 @@ class AudioX {
   async addMedia(mediaTrack: MediaTrack) {
     if (!mediaTrack) {
       return;
+    }
+
+    const queue = this.getQueue();
+    if (isValidArray(queue)) {
+      const index = queue.findIndex((track) => mediaTrack.id === track.id);
+      if (index > -1) {
+        this._currentQueueIndex = index;
+      }
     }
 
     const mediaType = mediaTrack.source.includes('.m3u8') ? 'HLS' : 'DEFAULT';
@@ -165,7 +176,7 @@ class AudioX {
   }
 
   attachEq() {
-    if (this.isEqEnabled && this.eqStatus === 'IDEAL') {
+    if (this.eqStatus === 'IDEAL') {
       try {
         const eq = new Equalizer();
         this.eqStatus = eq.status();
@@ -218,7 +229,6 @@ class AudioX {
         this.addMedia(currentTrack).then(() => {
           if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
             setTimeout(async () => {
-              this.attachEq();
               await this.play();
             }, 950);
           }
@@ -323,15 +333,27 @@ class AudioX {
   }
 
   setPreset(id: keyof Preset) {
-    this.eqInstance.setPreset(id);
+    if (this.isEqEnabled) {
+      this.eqInstance.setPreset(id);
+    } else {
+      console.error('Equalizer not initialized, please set enableEq at init');
+    }
   }
 
   setCustomEQ(gains: number[]) {
-    this.eqInstance.setCustomEQ(gains);
+    if (this.isEqEnabled) {
+      this.eqInstance.setCustomEQ(gains);
+    } else {
+      console.error('Equalizer not initialized, please set enableEq at init');
+    }
   }
 
   setBassBoost(enabled: boolean, boost: number) {
-    this.eqInstance.setBassBoost(enabled, boost);
+    if (this.isEqEnabled) {
+      this.eqInstance.setBassBoost(enabled, boost);
+    } else {
+      console.error('Equalizer not initialized, please set enableEq at init');
+    }
   }
 
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
@@ -360,20 +382,23 @@ class AudioX {
   }
 
   playNext() {
-    if (this._queue.length > this._currentQueueIndex + 1) {
-      this._currentQueueIndex++;
-      const nextTrack = this._queue[this._currentQueueIndex];
+    const index = this._currentQueueIndex + 1;
+    if (this._queue.length > index) {
+      const nextTrack = this._queue[index];
       this.addMediaAndPlay(nextTrack, this._fetchFn);
+      this._currentQueueIndex = index;
     } else {
       console.warn('Queue ended');
     }
   }
 
   playPrevious() {
-    if (this._currentQueueIndex > 0) {
-      this._currentQueueIndex--;
-      const previousTrack = this._queue[this._currentQueueIndex];
+    const index = this._currentQueueIndex - 1;
+
+    if (index > 0) {
+      const previousTrack = this._queue[index];
       this.addMediaAndPlay(previousTrack, this._fetchFn);
+      this._currentQueueIndex = index;
     } else {
       console.log('At the beginning of the queue');
     }
