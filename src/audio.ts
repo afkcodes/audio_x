@@ -399,7 +399,7 @@ class AudioX {
   playPrevious() {
     const index = this._currentQueueIndex - 1;
 
-    if (index > 0) {
+    if (index >= 0) {
       const previousTrack = this._queue[index];
       this.addMediaAndPlay(previousTrack, this._fetchFn);
       this._currentQueueIndex = index;
