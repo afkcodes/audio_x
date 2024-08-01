@@ -99,6 +99,7 @@ class AudioX {
     this._audio.autoplay = autoPlay;
     this._audio.crossOrigin = crossOrigin;
     this.isPlayLogEnabled = enablePlayLog;
+    this.isEqEnabled = enableEQ;
 
     if (customEventListeners !== null) {
       if (useDefaultEventListeners) {
@@ -115,10 +116,6 @@ class AudioX {
     if (showNotificationActions) {
       this.showNotificationsActions = true;
       attachMediaSessionHandlers();
-    }
-
-    if (enableEQ) {
-      this.isEqEnabled = enableEQ;
     }
 
     if (enableHls) {
@@ -199,6 +196,9 @@ class AudioX {
         .catch(() => {
           console.warn('cancelling current audio playback, track changed');
         });
+    }
+    if (this.isEqEnabled) {
+      this.attachEq();
     }
   }
 
