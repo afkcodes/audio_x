@@ -14,7 +14,8 @@ export type PlayBackState =
   | 'error'
   | 'buffering'
   | 'trackchanged'
-  | 'durationchanged';
+  | 'durationchanged'
+  | 'queueended';
 
 export type MediaArtwork = { src: string; name?: string; sizes?: string };
 export interface MediaTrack {

@@ -17,7 +17,8 @@ const PLAYBACK_STATE = Object.freeze({
   STALLED: 'stalled',
   ERROR: 'error',
   TRACK_CHANGE: 'trackchanged',
-  DURATION_CHANGE: 'durationchanged'
+  DURATION_CHANGE: 'durationchanged',
+  QUEUE_ENDED: 'queueended'
 });
 
 const ERROR_MSG_MAP: ErrorMessageMap = Object.freeze({

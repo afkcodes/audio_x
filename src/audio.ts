@@ -118,10 +118,7 @@ class AudioX {
     }
 
     if (enableEQ) {
-      this.attachEq();
-      if (this.eqInstance) {
-        this.isEqEnabled = enableEQ;
-      }
+      this.isEqEnabled = enableEQ;
     }
 
     if (enableHls) {
@@ -230,6 +227,9 @@ class AudioX {
           if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
             setTimeout(async () => {
               await this.play();
+              if (this.isEqEnabled) {
+                this.attachEq();
+              }
             }, 950);
           }
         });
@@ -388,7 +388,11 @@ class AudioX {
       this.addMediaAndPlay(nextTrack, this._fetchFn);
       this._currentQueueIndex = index;
     } else {
-      console.warn('Queue ended');
+      // stop the audio and end trigger queue ended
+      this.stop();
+      notifier.notify('AUDIO_STATE', {
+        playbackState: PLAYBACK_STATE.QUEUE_ENDED
+      });
     }
   }
 

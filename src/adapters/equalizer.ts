@@ -34,7 +34,9 @@ class Equalizer {
   private initializeAudioContext() {
     const audioContextOptions = { latencyHint: 'playback', sampleRate: 44100 };
     if (typeof AudioContext !== 'undefined') {
-      this.audioCtx = new AudioContext(audioContextOptions);
+      this.audioCtx = new AudioContext(
+        audioContextOptions as AudioContextOptions
+      );
     } else if (typeof (window as any).webkitAudioContext !== 'undefined') {
       this.audioCtx = new (window as any).webkitAudioContext(
         audioContextOptions
