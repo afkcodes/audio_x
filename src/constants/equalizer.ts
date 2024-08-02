@@ -1,16 +1,16 @@
 import { Band } from 'types/equalizer.types';
 
 const bands: Band[] = [
-  { frequency: 31, type: 'lowshelf', gain: 0 },
-  { frequency: 63, type: 'peaking', gain: 0 },
-  { frequency: 125, type: 'peaking', gain: 0 },
-  { frequency: 250, type: 'peaking', gain: 0 },
-  { frequency: 500, type: 'peaking', gain: 0 },
-  { frequency: 1000, type: 'peaking', gain: 0 },
-  { frequency: 2000, type: 'peaking', gain: 0 },
-  { frequency: 4000, type: 'peaking', gain: 0 },
-  { frequency: 8000, type: 'peaking', gain: 0 },
-  { frequency: 16000, type: 'highshelf', gain: 0 }
+  { frequency: 31, type: 'lowshelf', gain: 0, q: 1.2 },
+  { frequency: 63, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 125, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 250, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 500, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 1000, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 2000, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 4000, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 8000, type: 'peaking', gain: 0, q: 1.2 },
+  { frequency: 16000, type: 'highshelf', gain: 0, q: 1.2 }
 ];
 
 const presets = [
