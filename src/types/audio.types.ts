@@ -42,7 +42,7 @@ export interface AudioInit {
   enablePlayLog?: boolean;
   enableHls?: boolean;
   enableEQ?: boolean;
-  crossOrigin?: string;
+  crossOrigin?: 'anonymous' | 'use-credentials' | null;
   hlsConfig?: HlsConfig | {};
 }
 

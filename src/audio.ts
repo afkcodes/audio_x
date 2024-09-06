@@ -90,7 +90,7 @@ class AudioX {
       enablePlayLog = false,
       enableHls = false,
       enableEQ = false,
-      crossOrigin = 'anonymous',
+      crossOrigin = null,
       hlsConfig = {}
     } = initProps;
 
@@ -124,9 +124,16 @@ class AudioX {
     }
   }
 
-  async addMedia(mediaTrack: MediaTrack) {
+  async addMedia(
+    mediaTrack: MediaTrack,
+    mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>
+  ) {
     if (!mediaTrack) {
       return;
+    }
+
+    if (mediaFetchFn && !mediaTrack.source.length) {
+      this._fetchFn = mediaFetchFn;
     }
 
     const queue = this.getQueue();
@@ -143,7 +150,10 @@ class AudioX {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
 
-    if (mediaType === 'HLS') {
+    if (
+      mediaType === 'HLS' &&
+      !audioInstance.canPlayType('application/vnd.apple.mpegurl')
+    ) {
       const hls = new HlsAdapter();
       const hlsInstance = hls.getHlsInstance();
       if (hlsInstance) {
@@ -217,7 +227,7 @@ class AudioX {
   ) {
     const currentTrack =
       mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
-    if (fetchFn && isValidFunction(fetchFn) && currentTrack) {
+    if (fetchFn && isValidFunction(fetchFn) && currentTrack?.source.length) {
       this._fetchFn = fetchFn;
       await fetchFn(currentTrack as MediaTrack);
     }
@@ -383,7 +393,7 @@ class AudioX {
 
   playNext() {
     const index = this._currentQueueIndex + 1;
-    if (this._queue.length > index) {
+    if (this?._queue?.length > index) {
       const nextTrack = this._queue[index];
       this.addMediaAndPlay(nextTrack, this._fetchFn);
       this._currentQueueIndex = index;
@@ -397,10 +407,10 @@ class AudioX {
   }
 
   playPrevious() {
-    const index = this._currentQueueIndex - 1;
+    const index = this?._currentQueueIndex - 1;
 
     if (index >= 0) {
-      const previousTrack = this._queue[index];
+      const previousTrack = this?._queue[index];
       this.addMediaAndPlay(previousTrack, this._fetchFn);
       this._currentQueueIndex = index;
     } else {
