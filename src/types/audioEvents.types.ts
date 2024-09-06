@@ -24,6 +24,7 @@ export interface AudioEvents {
   LOAD_START: 'loadstart';
   ERROR: 'error';
   TRACK_CHANGE: 'trackchange'; // this is a custom event added to support track change
+  QUEUE_ENDED: 'queueended'; // this is a custom event added to support end of queue
 }
 
 export interface HlsEvents {

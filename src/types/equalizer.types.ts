@@ -2,6 +2,7 @@ export interface Band {
   frequency: number;
   type: BiquadFilterType;
   gain: number;
+  q: number;
 }
 
 export interface Preset {

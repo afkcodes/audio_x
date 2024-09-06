@@ -9,6 +9,8 @@ class Equalizer {
   private audioCtx: AudioContext;
   private audioCtxStatus: EqualizerStatus;
   private eqFilterBands: BiquadFilterNode[];
+  private bassBoostFilter: BiquadFilterNode;
+  private compressor: DynamicsCompressorNode;
 
   /**
    * Creates an instance of Equalizer or returns the existing instance.
@@ -31,10 +33,15 @@ class Equalizer {
    * @private
    */
   private initializeAudioContext() {
+    const audioContextOptions = { latencyHint: 'playback' };
     if (typeof AudioContext !== 'undefined') {
-      this.audioCtx = new AudioContext();
+      this.audioCtx = new AudioContext(
+        audioContextOptions as AudioContextOptions
+      );
     } else if (typeof (window as any).webkitAudioContext !== 'undefined') {
-      this.audioCtx = new (window as any).webkitAudioContext();
+      this.audioCtx = new (window as any).webkitAudioContext(
+        audioContextOptions
+      );
     } else {
       console.error('Web Audio API is not supported in this browser.');
     }
@@ -77,21 +84,32 @@ class Equalizer {
         filter.type = band.type;
         filter.frequency.value = band.frequency;
         filter.gain.value = band.gain;
-        filter.Q.value = 1;
+        filter.Q.value = band.q || 1; // Use a default Q of 1 if not specified
         return filter;
       });
 
-      const gainNode = this.audioCtx.createGain();
-      gainNode.gain.value = 1; // TODO: Normalize sound output
+      // Create a compressor for overall dynamic control
+      this.compressor = this.audioCtx.createDynamicsCompressor();
+      this.compressor.threshold.value = -24;
+      this.compressor.knee.value = 30;
+      this.compressor.ratio.value = 12;
+      this.compressor.attack.value = 0.003;
+      this.compressor.release.value = 0.25;
 
+      // Create the bass boost filter
+      this.bassBoostFilter = this.audioCtx.createBiquadFilter();
+      this.bassBoostFilter.type = 'lowshelf';
+      this.bassBoostFilter.frequency.value = 100;
+      this.bassBoostFilter.gain.value = 0;
+
+      // Connect the nodes
       audioSource.connect(equalizerBands[0]);
-
       for (let i = 0; i < equalizerBands.length - 1; i++) {
         equalizerBands[i].connect(equalizerBands[i + 1]);
       }
-
-      equalizerBands[equalizerBands.length - 1].connect(gainNode);
-      gainNode.connect(this.audioCtx.destination);
+      equalizerBands[equalizerBands.length - 1].connect(this.bassBoostFilter);
+      this.bassBoostFilter.connect(this.compressor);
+      this.compressor.connect(this.audioCtx.destination);
 
       this.audioCtxStatus = 'ACTIVE';
       this.eqFilterBands = equalizerBands;
@@ -120,8 +138,10 @@ class Equalizer {
       return;
     }
 
+    const currentTime = this.audioCtx.currentTime;
     this.eqFilterBands.forEach((band, index) => {
-      band.gain.value = preset.gains[index];
+      const targetGain = preset.gains[index];
+      band.gain.setTargetAtTime(targetGain, currentTime, 0.05);
     });
   }
 
@@ -149,13 +169,78 @@ class Equalizer {
    * @param {number[]} gains - The gain values for each band.
    */
   setCustomEQ(gains: number[]) {
-    if (isValidArray(gains)) {
+    if (isValidArray(gains) && gains.length === this.eqFilterBands.length) {
+      const currentTime = this.audioCtx.currentTime;
       this.eqFilterBands.forEach((band: BiquadFilterNode, index: number) => {
-        band.gain.value = gains[index];
+        band.gain.setTargetAtTime(gains[index], currentTime, 0.05);
       });
     } else {
       console.error('Invalid array of gains provided.');
     }
+  }
+
+  /**
+   * Enables or disables bass boost.
+   * @param {boolean} enable - Whether to enable or disable bass boost.
+   * @param {number} gain - The gain value for bass boost.
+   */
+  setBassBoost(enable: boolean, gain: number = 6) {
+    const currentTime = this.audioCtx.currentTime;
+    if (enable) {
+      this.bassBoostFilter.gain.setTargetAtTime(gain, currentTime, 0.05);
+    } else {
+      this.bassBoostFilter.gain.setTargetAtTime(0, currentTime, 0.05);
+    }
+  }
+
+  /**
+   * Adjusts the compressor settings.
+   * @param {Partial<DynamicsCompressorOptions>} options - The compressor options to adjust.
+   */
+  setCompressorSettings(options: Partial<DynamicsCompressorOptions>) {
+    if (this.compressor) {
+      if (options.threshold !== undefined)
+        this.compressor.threshold.setTargetAtTime(
+          options.threshold,
+          this.audioCtx.currentTime,
+          0.01
+        );
+      if (options.knee !== undefined)
+        this.compressor.knee.setTargetAtTime(
+          options.knee,
+          this.audioCtx.currentTime,
+          0.01
+        );
+      if (options.ratio !== undefined)
+        this.compressor.ratio.setTargetAtTime(
+          options.ratio,
+          this.audioCtx.currentTime,
+          0.01
+        );
+      if (options.attack !== undefined)
+        this.compressor.attack.setTargetAtTime(
+          options.attack,
+          this.audioCtx.currentTime,
+          0.01
+        );
+      if (options.release !== undefined)
+        this.compressor.release.setTargetAtTime(
+          options.release,
+          this.audioCtx.currentTime,
+          0.01
+        );
+    }
+  }
+
+  /**
+   * Resets the equalizer to flat response.
+   */
+  reset() {
+    const currentTime = this.audioCtx.currentTime;
+    this.eqFilterBands.forEach((band: BiquadFilterNode) => {
+      band.gain.setTargetAtTime(0, currentTime, 0.05);
+    });
+    this.bassBoostFilter.gain.setTargetAtTime(0, currentTime, 0.05);
   }
 }
 

@@ -104,7 +104,8 @@ const BASE_EVENT_CALLBACK_MAP: EventListenerCallbackMap = {
     const isPaused = audioInstance.paused;
     const bufferedDuration = getBufferedDuration(audioInstance);
 
-    // below we check if the audio was already in paused state then we keep it as paused instead going to ready this make sure ready is fired only on the first load.
+    /* below we check if the audio was already in paused state then we keep
+     it as paused instead going to ready this make sure ready is fired only on the first load.*/
     notifier.notify(
       'AUDIO_STATE',
       {

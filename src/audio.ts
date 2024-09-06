@@ -90,7 +90,7 @@ class AudioX {
       enablePlayLog = false,
       enableHls = false,
       enableEQ = false,
-      crossOrigin = 'anonymous',
+      crossOrigin = null,
       hlsConfig = {}
     } = initProps;
 
@@ -99,6 +99,7 @@ class AudioX {
     this._audio.autoplay = autoPlay;
     this._audio.crossOrigin = crossOrigin;
     this.isPlayLogEnabled = enablePlayLog;
+    this.isEqEnabled = enableEQ;
 
     if (customEventListeners !== null) {
       if (useDefaultEventListeners) {
@@ -117,19 +118,30 @@ class AudioX {
       attachMediaSessionHandlers();
     }
 
-    if (enableEQ) {
-      this.isEqEnabled = enableEQ;
-    }
-
     if (enableHls) {
       const hls = new HlsAdapter();
       hls.init(hlsConfig, enablePlayLog);
     }
   }
 
-  async addMedia(mediaTrack: MediaTrack) {
+  async addMedia(
+    mediaTrack: MediaTrack,
+    mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>
+  ) {
     if (!mediaTrack) {
       return;
+    }
+
+    if (mediaFetchFn && !mediaTrack.source.length) {
+      this._fetchFn = mediaFetchFn;
+    }
+
+    const queue = this.getQueue();
+    if (isValidArray(queue)) {
+      const index = queue.findIndex((track) => mediaTrack.id === track.id);
+      if (index > -1) {
+        this._currentQueueIndex = index;
+      }
     }
 
     const mediaType = mediaTrack.source.includes('.m3u8') ? 'HLS' : 'DEFAULT';
@@ -138,7 +150,10 @@ class AudioX {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
 
-    if (mediaType === 'HLS') {
+    if (
+      mediaType === 'HLS' &&
+      !audioInstance.canPlayType('application/vnd.apple.mpegurl')
+    ) {
       const hls = new HlsAdapter();
       const hlsInstance = hls.getHlsInstance();
       if (hlsInstance) {
@@ -165,7 +180,7 @@ class AudioX {
   }
 
   attachEq() {
-    if (this.isEqEnabled && this.eqStatus === 'IDEAL') {
+    if (this.eqStatus === 'IDEAL') {
       try {
         const eq = new Equalizer();
         this.eqStatus = eq.status();
@@ -192,6 +207,9 @@ class AudioX {
           console.warn('cancelling current audio playback, track changed');
         });
     }
+    if (this.isEqEnabled) {
+      this.attachEq();
+    }
   }
 
   /**
@@ -209,23 +227,19 @@ class AudioX {
   ) {
     const currentTrack =
       mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
-    if (fetchFn && isValidFunction(fetchFn) && currentTrack) {
+    if (fetchFn && isValidFunction(fetchFn) && currentTrack?.source.length) {
       this._fetchFn = fetchFn;
       await fetchFn(currentTrack as MediaTrack);
-    }
-
-    if (this._queue && isValidArray(this._queue)) {
-      this._currentQueueIndex = this._queue.findIndex(
-        (track) => track.id === currentTrack?.id
-      );
     }
     try {
       if (currentTrack) {
         this.addMedia(currentTrack).then(() => {
           if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
             setTimeout(async () => {
-              this.attachEq();
               await this.play();
+              if (this.isEqEnabled) {
+                this.attachEq();
+              }
             }, 950);
           }
         });
@@ -329,14 +343,31 @@ class AudioX {
   }
 
   setPreset(id: keyof Preset) {
-    this.eqInstance.setPreset(id);
+    if (this.isEqEnabled) {
+      this.eqInstance.setPreset(id);
+    } else {
+      console.error('Equalizer not initialized, please set enableEq at init');
+    }
   }
 
   setCustomEQ(gains: number[]) {
-    this.eqInstance.setCustomEQ(gains);
+    if (this.isEqEnabled) {
+      this.eqInstance.setCustomEQ(gains);
+    } else {
+      console.error('Equalizer not initialized, please set enableEq at init');
+    }
+  }
+
+  setBassBoost(enabled: boolean, boost: number) {
+    if (this.isEqEnabled) {
+      this.eqInstance.setBassBoost(enabled, boost);
+    } else {
+      console.error('Equalizer not initialized, please set enableEq at init');
+    }
   }
 
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
+    this.clearQueue();
     const playerQueue = isValidArray(queue) ? queue.slice() : [];
     switch (playbackType) {
       case 'DEFAULT':
@@ -353,27 +384,35 @@ class AudioX {
         break;
     }
     handleQueuePlayback();
-    // Attaching MediaSession Handler again as this will make sure the next and previous button show up in notification
+    /* Attaching MediaSession Handler again as this will make sure that
+     the next and previous button show up in notification */
     if (this.showNotificationsActions) {
       attachMediaSessionHandlers();
     }
   }
 
   playNext() {
-    if (this._queue.length > this._currentQueueIndex + 1) {
-      this._currentQueueIndex++;
-      const nextTrack = this._queue[this._currentQueueIndex];
+    const index = this._currentQueueIndex + 1;
+    if (this?._queue?.length > index) {
+      const nextTrack = this._queue[index];
       this.addMediaAndPlay(nextTrack, this._fetchFn);
+      this._currentQueueIndex = index;
     } else {
-      console.warn('Queue ended');
+      // stop the audio and end trigger queue ended
+      this.stop();
+      notifier.notify('AUDIO_STATE', {
+        playbackState: PLAYBACK_STATE.QUEUE_ENDED
+      });
     }
   }
 
   playPrevious() {
-    if (this._currentQueueIndex > 0) {
-      this._currentQueueIndex--;
-      const previousTrack = this._queue[this._currentQueueIndex];
+    const index = this?._currentQueueIndex - 1;
+
+    if (index >= 0) {
+      const previousTrack = this?._queue[index];
       this.addMediaAndPlay(previousTrack, this._fetchFn);
+      this._currentQueueIndex = index;
     } else {
       console.log('At the beginning of the queue');
     }
@@ -382,6 +421,7 @@ class AudioX {
   clearQueue() {
     if (this._queue && isValidArray(this._queue)) {
       this._queue = [];
+      this._currentQueueIndex = 0;
     }
   }
 

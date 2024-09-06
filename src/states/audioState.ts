@@ -1,4 +1,5 @@
 import { PLAYBACK_STATE } from 'constants/common';
+import { diffChecker } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 import { ReadyState } from 'types';
 import { AudioState, MediaTrack } from 'types/audio.types';
@@ -35,7 +36,12 @@ export const AUDIO_STATE: AudioState = {
 ChangeNotifier.listen(
   'AUDIO_STATE',
   (audioState: AudioState) => {
-    ChangeNotifier.notify('AUDIO_X_STATE', { ...AUDIO_STATE, ...audioState });
+    const latestState = ChangeNotifier.getLatestState(
+      'AUDIO_X_STATE'
+    ) as AudioState;
+    if (!diffChecker(latestState, audioState)) {
+      ChangeNotifier.notify('AUDIO_X_STATE', { ...AUDIO_STATE, ...audioState });
+    }
   },
   AUDIO_STATE
 );

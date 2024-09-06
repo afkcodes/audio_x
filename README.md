@@ -1,5 +1,7 @@
 # audio_x
 
+![NPM Version](https://img.shields.io/npm/v/audio_x) ![NPM Downloads](https://img.shields.io/npm/dm/audio_x)
+
 ---
 
 A simple audio player for all your audio playing needs, based on the HTML5 audio element. Supports most popular formats.

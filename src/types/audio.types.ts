@@ -14,7 +14,8 @@ export type PlayBackState =
   | 'error'
   | 'buffering'
   | 'trackchanged'
-  | 'durationchanged';
+  | 'durationchanged'
+  | 'queueended';
 
 export type MediaArtwork = { src: string; name?: string; sizes?: string };
 export interface MediaTrack {
@@ -41,7 +42,7 @@ export interface AudioInit {
   enablePlayLog?: boolean;
   enableHls?: boolean;
   enableEQ?: boolean;
-  crossOrigin?: string;
+  crossOrigin?: 'anonymous' | 'use-credentials' | null;
   hlsConfig?: HlsConfig | {};
 }
 

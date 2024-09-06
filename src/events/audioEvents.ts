@@ -23,7 +23,8 @@ export const AUDIO_EVENTS: AudioEvents = Object.freeze({
   PROGRESS: 'progress',
   LOAD_START: 'loadstart',
   ERROR: 'error',
-  TRACK_CHANGE: 'trackchange' // this is a custom event added to support track change
+  TRACK_CHANGE: 'trackchange', // this is a custom event added to support track change
+  QUEUE_ENDED: 'queueended' // this is a custom event added to support end of queue
 });
 
 export const HLS_EVENTS = {
