@@ -3268,6 +3268,7 @@ interface AudioEvents {
     LOAD_START: 'loadstart';
     ERROR: 'error';
     TRACK_CHANGE: 'trackchange';
+    QUEUE_ENDED: 'queueended';
 }
 interface CustomAudioState {
     AUDIO_X_STATE: 'AUDIO_X_STATE';
@@ -3280,7 +3281,7 @@ type EventListenerCallbackMap = {
 type InitMode = 'REACT' | 'VANILLA';
 type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
 type Preload = 'none' | 'metadata' | 'auto' | '';
-type PlayBackState = 'idle' | 'playing' | 'ended' | 'ready' | 'paused' | 'stalled' | 'error' | 'buffering' | 'trackchanged' | 'durationchanged';
+type PlayBackState = 'idle' | 'playing' | 'ended' | 'ready' | 'paused' | 'stalled' | 'error' | 'buffering' | 'trackchanged' | 'durationchanged' | 'queueended';
 type MediaArtwork = {
     src: string;
     name?: string;
@@ -3309,7 +3310,7 @@ interface AudioInit {
     enablePlayLog?: boolean;
     enableHls?: boolean;
     enableEQ?: boolean;
-    crossOrigin?: string;
+    crossOrigin?: 'anonymous' | 'use-credentials' | null;
     hlsConfig?: HlsConfig | {};
 }
 interface AudioError {
@@ -3335,6 +3336,7 @@ interface Band {
     frequency: number;
     type: BiquadFilterType;
     gain: number;
+    q: number;
 }
 interface Preset {
     id: string | number;
@@ -3356,7 +3358,7 @@ declare class AudioX {
     private showNotificationsActions;
     constructor();
     init(initProps: AudioInit): Promise<void>;
-    addMedia(mediaTrack: MediaTrack): Promise<void>;
+    addMedia(mediaTrack: MediaTrack, mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>): Promise<void>;
     attachEq(): void;
     play(): Promise<void>;
     addMediaAndPlay(mediaTrack?: MediaTrack | null, fetchFn?: (mediaTrack: MediaTrack) => Promise<void>): Promise<void>;
@@ -3379,6 +3381,7 @@ declare class AudioX {
     }[];
     setPreset(id: keyof Preset): void;
     setCustomEQ(gains: number[]): void;
+    setBassBoost(enabled: boolean, boost: number): void;
     addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType): void;
     playNext(): void;
     playPrevious(): void;
