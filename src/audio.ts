@@ -8,6 +8,7 @@ import {
   handleQueuePlayback,
   isValidArray,
   isValidFunction,
+  isValidObject,
   shuffle
 } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
@@ -19,6 +20,8 @@ import {
 import { READY_STATE } from 'states/audioState';
 import {
   AudioInit,
+  AudioState,
+  LoopMode,
   MediaTrack,
   PlaybackRate,
   QueuePlaybackType
@@ -39,6 +42,8 @@ class AudioX {
   private isEqEnabled: boolean = false;
   private eqInstance: Equalizer;
   private showNotificationsActions: boolean = false;
+  private originalQueue: MediaTrack[] = [];
+  private isShuffled: boolean = false;
 
   constructor() {
     if (AudioX._instance) {
@@ -377,7 +382,7 @@ class AudioX {
         this._queue = playerQueue.reverse();
         break;
       case 'SHUFFLE':
-        this._queue = shuffle(playerQueue);
+        this.shuffle(playerQueue);
         break;
       default:
         this._queue = playerQueue;
@@ -432,6 +437,69 @@ class AudioX {
       } else {
         this._queue.push(mediaTracks);
       }
+    }
+  }
+
+  private shuffle(queue?: MediaTrack[]) {
+    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
+    const currentQueue = queue ? queue : this.getQueue();
+    const currentTrack = isValidObject(audioState.currentTrack)
+      ? audioState.currentTrack
+      : undefined;
+
+    if (!this.isShuffled) {
+      this.originalQueue = [...currentQueue];
+    }
+
+    if (currentTrack) {
+      const currentIndex = currentQueue.findIndex(
+        (track) => track.id === currentTrack.id
+      );
+
+      if (currentIndex !== -1) {
+        const remainingTracks = currentQueue.slice(currentIndex + 1);
+        const shuffledRemaining = shuffle(remainingTracks);
+
+        const newQueue = [
+          ...currentQueue.slice(0, currentIndex + 1),
+          ...shuffledRemaining
+        ];
+
+        this.addQueue(newQueue, 'DEFAULT');
+      }
+    } else {
+      const shuffledQueue = shuffle(currentQueue);
+      this.addQueue(shuffledQueue, 'DEFAULT');
+    }
+    this.isShuffled = true;
+  }
+
+  toggleShuffle() {
+    if (this.isShuffled) {
+      this.addQueue(this.originalQueue, 'DEFAULT');
+      this.isShuffled = false;
+    } else {
+      this.shuffle();
+    }
+  }
+
+  loop(loopMode: LoopMode) {
+    switch (loopMode) {
+      case 'SINGLE':
+        audioInstance.loop = true;
+        break;
+      case 'QUEUE':
+        const queue = this.getQueue();
+        if (isValidArray(queue)) {
+          this.addMediaAndPlay(queue[0]);
+        }
+        break;
+      case 'OFF':
+        audioInstance.loop = false;
+        break;
+      default:
+        audioInstance.loop = false;
+        break;
     }
   }
 

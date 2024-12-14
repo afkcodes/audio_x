@@ -66,3 +66,4 @@ export interface AudioState {
 }
 
 export type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';
+export type LoopMode = 'SINGLE' | 'QUEUE' | 'OFF';
