@@ -1,6 +1,7 @@
 import { AudioX } from 'audio';
 import { ERROR_MSG_MAP } from 'constants/common';
 import { AudioEvents, AudioState, MediaTrack } from 'types';
+import { LoopMode } from 'types/audio.types';
 import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
@@ -161,6 +162,29 @@ const shuffle = <T>(array: T[]): T[] => {
   return shuffledArray;
 };
 
+const handleLoopPlayback = (loopMode: LoopMode) => {
+  const audio = new AudioX();
+  const audioInstance = AudioX.getAudioInstance();
+
+  if (loopMode === 'OFF') {
+    audioInstance.loop = false;
+  }
+  if (loopMode === 'SINGLE') {
+    audioInstance.loop = true;
+  }
+  if (loopMode === 'QUEUE') {
+    const queue = audio.getQueue();
+    // switching off single
+    handleLoopPlayback('OFF');
+    console.log('LOOP_MODE', loopMode);
+    ChangeNotifier.listen('AUDIO_STATE', (audioState: AudioState) => {
+      if (audioState.playbackState === 'queueended' && isValidArray(queue)) {
+        audio.addMediaAndPlay(queue[0]);
+      }
+    });
+  }
+};
+
 const diffChecker = (d1: any, d2: any): boolean => {
   if (d1 === null && d2 === null) {
     return true;
@@ -206,6 +230,7 @@ export {
   diffChecker,
   getBufferedDuration,
   getReadableErrorMessage,
+  handleLoopPlayback,
   handleQueuePlayback,
   isValidArray,
   isValidFunction,

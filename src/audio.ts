@@ -5,6 +5,7 @@ import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import { attachEventListeners } from 'events/listeners';
 import {
   calculateActualPlayedLength,
+  handleLoopPlayback,
   handleQueuePlayback,
   isValidArray,
   isValidFunction,
@@ -44,6 +45,7 @@ class AudioX {
   private showNotificationsActions: boolean = false;
   private originalQueue: MediaTrack[] = [];
   private isShuffled: boolean = false;
+  private loopMode: LoopMode = 'OFF';
 
   constructor() {
     if (AudioX._instance) {
@@ -484,23 +486,25 @@ class AudioX {
   }
 
   loop(loopMode: LoopMode) {
+    this.loopMode = loopMode;
     switch (loopMode) {
       case 'SINGLE':
-        audioInstance.loop = true;
+        handleLoopPlayback(loopMode);
         break;
       case 'QUEUE':
-        const queue = this.getQueue();
-        if (isValidArray(queue)) {
-          this.addMediaAndPlay(queue[0]);
-        }
+        handleLoopPlayback(loopMode);
         break;
       case 'OFF':
-        audioInstance.loop = false;
+        handleLoopPlayback(loopMode);
         break;
       default:
-        audioInstance.loop = false;
+        handleLoopPlayback('OFF');
         break;
     }
+  }
+
+  getLoopMode() {
+    return this.loopMode;
   }
 
   removeFromQueue(mediaTrack: MediaTrack) {
