@@ -9,10 +9,10 @@ import {
   handleQueuePlayback,
   isValidArray,
   isValidFunction,
-  isValidObject,
-  shuffle
+  isValidObject
 } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
+import { shuffleQueue } from 'helpers/shuffleHelper';
 
 import {
   attachMediaSessionHandlers,
@@ -375,7 +375,12 @@ class AudioX {
 
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
     this.clearQueue();
+    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
     const playerQueue = isValidArray(queue) ? queue.slice() : [];
+    const currentTrack = isValidObject(audioState.currentTrack)
+      ? audioState.currentTrack
+      : undefined;
+
     switch (playbackType) {
       case 'DEFAULT':
         this._queue = playerQueue;
@@ -384,7 +389,9 @@ class AudioX {
         this._queue = playerQueue.reverse();
         break;
       case 'SHUFFLE':
-        this.shuffle(playerQueue);
+        const newQueue = shuffleQueue(playerQueue, currentTrack?.id);
+        this.addQueue(newQueue, 'DEFAULT');
+        this.isShuffled = true;
         break;
       default:
         this._queue = playerQueue;
@@ -442,46 +449,23 @@ class AudioX {
     }
   }
 
-  private shuffle(queue?: MediaTrack[]) {
+  toggleShuffle() {
+    // isShuffled is false initially
     const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
-    const currentQueue = queue ? queue : this.getQueue();
+    const currentQueue = this._queue ?? this.getQueue();
+    this.clearQueue(); // clearing Queue to check if it still stays
     const currentTrack = isValidObject(audioState.currentTrack)
       ? audioState.currentTrack
       : undefined;
-
     if (!this.isShuffled) {
       this.originalQueue = [...currentQueue];
-    }
-
-    if (currentTrack) {
-      const currentIndex = currentQueue.findIndex(
-        (track) => track.id === currentTrack.id
-      );
-
-      if (currentIndex !== -1) {
-        const remainingTracks = currentQueue.slice(currentIndex + 1);
-        const shuffledRemaining = shuffle(remainingTracks);
-
-        const newQueue = [
-          ...currentQueue.slice(0, currentIndex + 1),
-          ...shuffledRemaining
-        ];
-
-        this.addQueue(newQueue, 'DEFAULT');
-      }
+      const newQueue = shuffleQueue(currentQueue, currentTrack?.id);
+      this.addQueue(newQueue, 'DEFAULT');
+      this.isShuffled = true;
     } else {
-      const shuffledQueue = shuffle(currentQueue);
-      this.addQueue(shuffledQueue, 'DEFAULT');
-    }
-    this.isShuffled = true;
-  }
-
-  toggleShuffle() {
-    if (this.isShuffled) {
+      if (!this.isShuffled || !this.originalQueue.length) return;
       this.addQueue(this.originalQueue, 'DEFAULT');
       this.isShuffled = false;
-    } else {
-      this.shuffle();
     }
   }
 
@@ -501,6 +485,10 @@ class AudioX {
         handleLoopPlayback('OFF');
         break;
     }
+  }
+
+  isShuffledEnabled() {
+    return this.isShuffled;
   }
 
   getLoopMode() {
