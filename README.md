@@ -305,13 +305,13 @@ audio.seekBy(time); // Time range in seconds to seek
 ```JS
 // To enable/disable shuffle
 
-audio.toggleShuffle(); // Time range in seconds to seek
+audio.toggleShuffle(); 
 ```
 
 ```JS
 // To check if queue is shuffled 
 
-audio.isShuffledEnabled(); // Time range in seconds to seek
+audio.isShuffledEnabled();
 ```
 
 ```JS
