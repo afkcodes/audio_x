@@ -5,12 +5,14 @@ import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
 import { attachEventListeners } from 'events/listeners';
 import {
   calculateActualPlayedLength,
+  handleLoopPlayback,
   handleQueuePlayback,
   isValidArray,
   isValidFunction,
-  shuffle
+  isValidObject
 } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
+import { shuffleQueue } from 'helpers/shuffleHelper';
 
 import {
   attachMediaSessionHandlers,
@@ -19,6 +21,8 @@ import {
 import { READY_STATE } from 'states/audioState';
 import {
   AudioInit,
+  AudioState,
+  LoopMode,
   MediaTrack,
   PlaybackRate,
   QueuePlaybackType
@@ -39,6 +43,9 @@ class AudioX {
   private isEqEnabled: boolean = false;
   private eqInstance: Equalizer;
   private showNotificationsActions: boolean = false;
+  private originalQueue: MediaTrack[] = [];
+  private isShuffled: boolean = false;
+  private loopMode: LoopMode = 'OFF';
 
   constructor() {
     if (AudioX._instance) {
@@ -368,7 +375,12 @@ class AudioX {
 
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
     this.clearQueue();
+    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
     const playerQueue = isValidArray(queue) ? queue.slice() : [];
+    const currentTrack = isValidObject(audioState.currentTrack)
+      ? audioState.currentTrack
+      : undefined;
+
     switch (playbackType) {
       case 'DEFAULT':
         this._queue = playerQueue;
@@ -377,7 +389,9 @@ class AudioX {
         this._queue = playerQueue.reverse();
         break;
       case 'SHUFFLE':
-        this._queue = shuffle(playerQueue);
+        const newQueue = shuffleQueue(playerQueue, currentTrack?.id);
+        this.addQueue(newQueue, 'DEFAULT');
+        this.isShuffled = true;
         break;
       default:
         this._queue = playerQueue;
@@ -433,6 +447,52 @@ class AudioX {
         this._queue.push(mediaTracks);
       }
     }
+  }
+
+  toggleShuffle() {
+    // isShuffled is false initially
+    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
+    const currentQueue = this._queue ?? this.getQueue();
+    this.clearQueue(); // clearing Queue to check if it still stays
+    const currentTrack = isValidObject(audioState.currentTrack)
+      ? audioState.currentTrack
+      : undefined;
+    if (!this.isShuffled) {
+      this.originalQueue = [...currentQueue];
+      const newQueue = shuffleQueue(currentQueue, currentTrack?.id);
+      this.addQueue(newQueue, 'DEFAULT');
+      this.isShuffled = true;
+    } else {
+      if (!this.isShuffled || !this.originalQueue.length) return;
+      this.addQueue(this.originalQueue, 'DEFAULT');
+      this.isShuffled = false;
+    }
+  }
+
+  loop(loopMode: LoopMode) {
+    this.loopMode = loopMode;
+    switch (loopMode) {
+      case 'SINGLE':
+        handleLoopPlayback(loopMode);
+        break;
+      case 'QUEUE':
+        handleLoopPlayback(loopMode);
+        break;
+      case 'OFF':
+        handleLoopPlayback(loopMode);
+        break;
+      default:
+        handleLoopPlayback('OFF');
+        break;
+    }
+  }
+
+  isShuffledEnabled() {
+    return this.isShuffled;
+  }
+
+  getLoopMode() {
+    return this.loopMode;
   }
 
   removeFromQueue(mediaTrack: MediaTrack) {
