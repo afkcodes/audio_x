@@ -19,10 +19,10 @@ export type PlayBackState =
 
 export type MediaArtwork = { src: string; name?: string; sizes?: string };
 export interface MediaTrack {
+  id: string;
   title: string;
   source: string;
   artwork: MediaArtwork[] | null;
-  id?: string;
   duration?: number;
   genre?: string;
   album?: string;
@@ -66,3 +66,4 @@ export interface AudioState {
 }
 
 export type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';
+export type LoopMode = 'SINGLE' | 'QUEUE' | 'OFF';

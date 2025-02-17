@@ -1,6 +1,6 @@
 {
   "name": "audio_x",
-  "version": "1.0.10",
+  "version": "1.0.12",
   "description": "The audio player for the gen-x",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,16 +21,21 @@
     "web-audio",
     "audio_x",
     "howler.js",
-    "soundmanager"
+    "soundmanager",
+    "audio player",
+    "openplayerjs",
+    "react-howler",
+    "react-audio-player",
+    "react-h5-audio-player"
   ],
   "author": "Ashish Kumar",
   "license": "MIT",
   "devDependencies": {
-    "@swc/core": "^1.5.24",
-    "@types/node": "^20.13.0",
-    "terser": "^5.31.0",
-    "tsup": "^8.0.1",
-    "typescript": "^5.4.5"
+    "@swc/core": "^1.10.15",
+    "@types/node": "^22.13.1",
+    "terser": "^5.38.1",
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3"
   },
   "repository": {
     "type": "git",

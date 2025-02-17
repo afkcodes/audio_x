@@ -3288,10 +3288,10 @@ type MediaArtwork = {
     sizes?: string;
 };
 interface MediaTrack {
+    id: string;
     title: string;
     source: string;
     artwork: MediaArtwork[] | null;
-    id?: string;
     duration?: number;
     genre?: string;
     album?: string;
@@ -3331,6 +3331,7 @@ interface AudioState {
     previousTrackPlayTime: number;
 }
 type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';
+type LoopMode = 'SINGLE' | 'QUEUE' | 'OFF';
 
 interface Band {
     frequency: number;
@@ -3356,6 +3357,9 @@ declare class AudioX {
     private isEqEnabled;
     private eqInstance;
     private showNotificationsActions;
+    private originalQueue;
+    private isShuffled;
+    private loopMode;
     constructor();
     init(initProps: AudioInit): Promise<void>;
     addMedia(mediaTrack: MediaTrack, mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>): Promise<void>;
@@ -3387,6 +3391,10 @@ declare class AudioX {
     playPrevious(): void;
     clearQueue(): void;
     addToQueue(mediaTracks: MediaTrack | MediaTrack[]): void;
+    toggleShuffle(): void;
+    loop(loopMode: LoopMode): void;
+    isShuffledEnabled(): boolean;
+    getLoopMode(): LoopMode;
     removeFromQueue(mediaTrack: MediaTrack): void;
     getQueue(): MediaTrack[];
     get id(): string | null;

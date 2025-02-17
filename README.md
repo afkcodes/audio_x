@@ -302,6 +302,30 @@ audio.seek(position); // Position is basically time in seconds
 audio.seekBy(time); // Time range in seconds to seek
 ```
 
+```JS
+// To enable/disable shuffle
+
+audio.toggleShuffle(); 
+```
+
+```JS
+// To check if queue is shuffled 
+
+audio.isShuffledEnabled();
+```
+
+```JS
+// To turn on looping [SINGLE/QUEUE/OFF]
+
+audio.loop("SINGLE"); // SINGLE/QUEUE/OFF
+```
+
+```JS
+// To get current Loop Mode
+
+audio.getLoopMode()
+```
+
 ### Author
 
 ---
