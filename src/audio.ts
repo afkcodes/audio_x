@@ -1,7 +1,9 @@
+import CastAdapter from 'adapters/cast';
 import { Equalizer } from 'adapters/equalizer';
 import HlsAdapter from 'adapters/hls';
+import { DEFAULT_CAST_CONFIG } from 'constants/cast';
 import { AUDIO_X_CONSTANTS, PLAYBACK_STATE } from 'constants/common';
-import { BASE_EVENT_CALLBACK_MAP } from 'events/baseEvents';
+import { BASE_EVENT_CALLBACK_MAP } from 'events/baseAudioListeners';
 import { attachEventListeners } from 'events/listeners';
 import {
   calculateActualPlayedLength,
@@ -29,24 +31,33 @@ import {
 } from 'types/audio.types';
 import { EqualizerStatus, Preset } from 'types/equalizer.types';
 
+// Holds the singleton instance of the HTMLAudioElement
 let audioInstance: HTMLAudioElement;
 const notifier = ChangeNotifier;
 
+/**
+ * AudioX class for managing audio playback with various features like queue, equalizer, and casting.
+ */
 class AudioX {
-  private _audio: HTMLAudioElement;
-  private isPlayLogEnabled: Boolean;
   private static _instance: AudioX;
-  private _queue: MediaTrack[];
-  private _currentQueueIndex: number = 0;
-  private _fetchFn: (mediaTrack: MediaTrack) => Promise<void>;
-  private eqStatus: EqualizerStatus = 'IDEAL';
-  private isEqEnabled: boolean = false;
+  private _audio: HTMLAudioElement;
   private eqInstance: Equalizer;
   private showNotificationsActions: boolean = false;
   private originalQueue: MediaTrack[] = [];
   private isShuffled: boolean = false;
   private loopMode: LoopMode = 'OFF';
+  private _queue: MediaTrack[];
+  private isPlayLogEnabled: boolean = false;
+  // private isCastingEnabled: boolean = false;
+  private isEqEnabled: boolean = false;
+  private _currentQueueIndex: number = 0;
+  private eqStatus: EqualizerStatus = 'IDEAL';
+  private _fetchFn: (mediaTrack: MediaTrack) => Promise<void>;
 
+  /**
+   * Constructor for the AudioX class.
+   * Ensures a single instance of the class (singleton pattern).
+   */
   constructor() {
     if (AudioX._instance) {
       console.warn(
@@ -67,26 +78,9 @@ class AudioX {
   }
 
   /**
-   *
-   * @param initProps  initial config to initialize AudioX
-   * @param initProps.mediaTrack mediaTrack Object containing metadata and source of the media
-   * @param initProps.mediaTrack.title title of the Audio
-   * @param initProps.mediaTrack.source URI of the Audio
-   * @param initProps.mediaTrack.artwork artwork of the Audio
-   * @param initProps.mediaTrack.duration  duration of the audio
-   * @param initProps.mediaTrack.genre genre of the audio
-   * @param initProps.mediaTrack.album album of the audio
-   * @param initProps.mediaTrack.comment comment for the audio
-   * @param initProps.mediaTrack.year release year of the audio
-   * @param initProps.mediaTrack.artist artist of the audio
-   * @param mode mode of operation for AudioX
-   * @param autoplay flag for autoplay
-   * @param preloadStrategy strategy for preloading audio
-   * @param playbackRate default playbackRate of the audio
-   * @param attachAudioEventListeners flag for registering audio events
-   * @param attachMediaSessionHandlers flag for registering mediaSession handlers
+   * Initializes the AudioX instance with the provided properties.
+   * @param {AudioInit} initProps - The initialization properties.
    */
-
   async init(initProps: AudioInit) {
     const {
       preloadStrategy = 'auto',
@@ -98,9 +92,12 @@ class AudioX {
       enableHls = false,
       enableEQ = false,
       crossOrigin = null,
-      hlsConfig = {}
+      hlsConfig = {},
+      enableCasting = false,
+      castConfig
     } = initProps;
 
+    // Set audio element attributes
     this._audio?.setAttribute('id', 'audio_x_instance');
     this._audio.preload = preloadStrategy;
     this._audio.autoplay = autoPlay;
@@ -108,6 +105,7 @@ class AudioX {
     this.isPlayLogEnabled = enablePlayLog;
     this.isEqEnabled = enableEQ;
 
+    // Attach event listeners
     if (customEventListeners !== null) {
       if (useDefaultEventListeners) {
         console.warn(
@@ -120,14 +118,37 @@ class AudioX {
       attachEventListeners(BASE_EVENT_CALLBACK_MAP, enablePlayLog);
     }
 
+    // Attach media session handlers for notification actions
     if (showNotificationActions) {
       this.showNotificationsActions = true;
       attachMediaSessionHandlers();
     }
 
+    // Enable equalizer if specified
+    if (enableEQ) {
+      this.isEqEnabled = enableEQ;
+    }
+
+    // Initialize HLS playback if enabled
     if (enableHls) {
       const hls = new HlsAdapter();
       hls.init(hlsConfig, enablePlayLog);
+    }
+
+    // Initialize casting if enabled
+    if (enableCasting) {
+      const cast = new CastAdapter();
+      const castReceiverId =
+        castConfig?.receiverId || DEFAULT_CAST_CONFIG.receiverId;
+      const castJoinPolicy =
+        castConfig?.joinPolicy || DEFAULT_CAST_CONFIG.joinPolicy;
+      cast.init(castReceiverId, castJoinPolicy, enablePlayLog);
+
+      if (!castConfig) {
+        console.warn(
+          'initializing cast framework with default cast config, please provide cast config'
+        );
+      }
     }
   }
 
@@ -153,6 +174,7 @@ class AudioX {
 
     const mediaType = mediaTrack.source.includes('.m3u8') ? 'HLS' : 'DEFAULT';
 
+    // Log the play length if logging is enabled
     if (this.isPlayLogEnabled) {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
@@ -173,9 +195,11 @@ class AudioX {
         await this.reset();
       }
     } else {
+      // Set audio source for non-HLS media
       audioInstance.src = mediaTrack.source;
     }
 
+    // Notify state change and update media metadata
     notifier.notify('AUDIO_STATE', {
       playbackState: PLAYBACK_STATE.TRACK_CHANGE,
       currentTrackPlayTime: 0,
@@ -186,6 +210,9 @@ class AudioX {
     audioInstance.load();
   }
 
+  /**
+   * Attaches the equalizer to the audio instance.
+   */
   attachEq() {
     if (this.eqStatus === 'IDEAL') {
       try {
@@ -198,6 +225,9 @@ class AudioX {
     }
   }
 
+  /**
+   * Plays the audio.
+   */
   async play() {
     const isSourceAvailable = audioInstance.src !== '';
     if (
@@ -220,13 +250,10 @@ class AudioX {
   }
 
   /**
-   *
-   * @param mediaTrack MediaTrack to be added and played
-   *
-   * Note: Use this method when you want to add media and do playback or want continuous playback
-   * You can also call addMedia and Play Separately to achieve playback.
+   * Adds a media track and plays it.
+   * @param {MediaTrack} [mediaTrack] - The media track to add and play.
+   * @param {(mediaTrack: MediaTrack) => Promise<void>} [fetchFn] - The fetch function to call before playback.
    */
-
   async addMediaAndPlay(
     mediaTrack?: MediaTrack | null,
     fetchFn?: (mediaTrack: MediaTrack) => Promise<void>
@@ -258,12 +285,18 @@ class AudioX {
     }
   }
 
+  /**
+   * Pauses the audio playback.
+   */
   pause() {
     if (audioInstance && !audioInstance?.paused) {
       audioInstance?.pause();
     }
   }
 
+  /**
+   * Stops the audio playback and resets the current time to 0.
+   */
   stop() {
     if (audioInstance && !audioInstance.paused) {
       audioInstance?.pause();
@@ -272,7 +305,8 @@ class AudioX {
   }
 
   /**
-   * @method reset :  This stops the playback and resets all the state of the audio
+   * Resets the audio instance, stopping playback and clearing the source.
+   * @method reset
    */
   async reset() {
     if (audioInstance) {
@@ -283,7 +317,8 @@ class AudioX {
   }
 
   /**
-   * @param volume : numeric value between 1-100 to be used.
+   * Sets the volume of the audio instance.
+   * @param {number} volume - The volume level (1-100).
    */
   setVolume(volume: number) {
     const actualVolume = volume / 100;
@@ -294,8 +329,10 @@ class AudioX {
       });
     }
   }
+
   /**
-   * @param playbackRate : a number denoting speed at which the playback should happen,
+   * Sets the playback rate of the audio instance.
+   * @param {PlaybackRate} playbackRate - The playback rate.
    */
   setPlaybackRate(playbackRate: PlaybackRate) {
     if (audioInstance) {
@@ -306,12 +343,19 @@ class AudioX {
     }
   }
 
+  /**
+   * Mutes the audio instance.
+   */
   mute() {
     if (audioInstance && !audioInstance.muted) {
       audioInstance.muted = true;
     }
   }
 
+  /**
+   * Seeks to a specific time in the audio playback.
+   * @param {number} time - The time to seek to (in seconds).
+   */
   seek(time: number) {
     if (audioInstance) {
       audioInstance.currentTime = time;
@@ -325,6 +369,9 @@ class AudioX {
     }
   }
 
+  /**
+   * Destroys the audio instance, resetting and clearing the source.
+   */
   async destroy() {
     if (audioInstance) {
       await this.reset();
@@ -333,11 +380,32 @@ class AudioX {
     }
   }
 
-  subscribe(eventName: string, callback: (data: any) => void, state: any = {}) {
+  castAudio() {
+    const casting = new CastAdapter();
+    casting.castAudio();
+  }
+
+  /**
+   * Subscribes to an event.
+   * @param {string} eventName - The event name.
+   * @param {(data: any) => void} callback - The callback function.
+   * @param {any} [state] - The state to pass to the callback.
+   * @returns {Function} The unsubscribe function.
+   */
+  subscribe(
+    eventName: string,
+    callback: (data: any) => void,
+    state: any = {}
+  ): Function {
     const unsubscribe = notifier.listen(eventName, callback, state);
     return unsubscribe;
   }
 
+  /**
+   * Adds an event listener to the audio instance.
+   * @param {keyof HTMLMediaElementEventMap} event - The event name.
+   * @param {(data: any) => void} callback - The callback function.
+   */
   addEventListener(
     event: keyof HTMLMediaElementEventMap,
     callback: (data: any) => void
@@ -345,10 +413,18 @@ class AudioX {
     audioInstance.addEventListener(event, callback);
   }
 
-  getPresets() {
+  /**
+   * Gets the available equalizer presets.
+   * @returns {Preset[]} The available presets.
+   */
+  getPresets(): Preset[] {
     return Equalizer.getPresets();
   }
 
+  /**
+   * Sets the equalizer to a specific preset.
+   * @param {keyof Preset} id - The preset ID.
+   */
   setPreset(id: keyof Preset) {
     if (this.isEqEnabled) {
       this.eqInstance.setPreset(id);
@@ -357,6 +433,10 @@ class AudioX {
     }
   }
 
+  /**
+   * Sets custom equalizer gains.
+   * @param {number[]} gains - The custom gains.
+   */
   setCustomEQ(gains: number[]) {
     if (this.isEqEnabled) {
       this.eqInstance.setCustomEQ(gains);
@@ -373,6 +453,11 @@ class AudioX {
     }
   }
 
+  /**
+   * Adds tracks to the queue with a specific playback type.
+   * @param {MediaTrack[]} queue - The tracks to add to the queue.
+   * @param {QueuePlaybackType} playbackType - The playback type (DEFAULT, REVERSE, SHUFFLE).
+   */
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
     this.clearQueue();
     const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
@@ -405,6 +490,9 @@ class AudioX {
     }
   }
 
+  /**
+   * Plays the next track in the queue.
+   */
   playNext() {
     const index = this._currentQueueIndex + 1;
     if (this?._queue?.length > index) {
@@ -420,6 +508,9 @@ class AudioX {
     }
   }
 
+  /**
+   * Plays the previous track in the queue.
+   */
   playPrevious() {
     const index = this?._currentQueueIndex - 1;
 
@@ -432,6 +523,9 @@ class AudioX {
     }
   }
 
+  /**
+   * Clears the queue.
+   */
   clearQueue() {
     if (this._queue && isValidArray(this._queue)) {
       this._queue = [];
@@ -495,6 +589,10 @@ class AudioX {
     return this.loopMode;
   }
 
+  /**
+   * Removes a specific track from the queue.
+   * @param {MediaTrack} mediaTrack - The track to remove.
+   */
   removeFromQueue(mediaTrack: MediaTrack) {
     if (this._queue && isValidArray(this._queue)) {
       const queue = this._queue.filter(
@@ -504,15 +602,35 @@ class AudioX {
     }
   }
 
-  getQueue() {
+  /**
+   * Gets the current queue.
+   * @returns {MediaTrack[]} The current queue.
+   */
+  getQueue(): MediaTrack[] {
     return this._queue && isValidArray(this._queue) ? this._queue : [];
   }
 
-  get id() {
+  /**
+   * Gets the current queue.
+   * @returns {AudioState} The current queue.
+   */
+  getAudioState(): AudioState {
+    return notifier.getLatestState('AUDIO_X_STATE') as AudioState;
+  }
+
+  /**
+   * Gets the ID of the audio instance.
+   * @returns {string | null} The ID of the audio instance.
+   */
+  get id(): string | null {
     return audioInstance?.getAttribute('id');
   }
 
-  static getAudioInstance() {
+  /**
+   * Gets the current audio instance.
+   * @returns {HTMLAudioElement} The current audio instance.
+   */
+  static getAudioInstance(): HTMLAudioElement {
     return audioInstance;
   }
 }

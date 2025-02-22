@@ -79,7 +79,10 @@ const attachHlsEventsListeners = (
     });
 };
 
+const attachCastEventListeners = () => {};
+
 export {
+  attachCastEventListeners,
   attachCustomEventListeners,
   attachEventListeners,
   attachHlsEventsListeners
