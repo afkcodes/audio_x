@@ -48,7 +48,6 @@ class AudioX {
   private loopMode: LoopMode = 'OFF';
   private _queue: MediaTrack[];
   private isPlayLogEnabled: boolean = false;
-  // private isCastingEnabled: boolean = false;
   private isEqEnabled: boolean = false;
   private _currentQueueIndex: number = 0;
   private eqStatus: EqualizerStatus = 'IDEAL';
@@ -344,11 +343,20 @@ class AudioX {
   }
 
   /**
-   * Mutes the audio instance.
+   * Mute the audio instance.
    */
   mute() {
     if (audioInstance && !audioInstance.muted) {
       audioInstance.muted = true;
+    }
+  }
+
+  /**
+   * unmute the audio instance.
+   */
+  unmute() {
+    if (audioInstance && audioInstance.muted) {
+      audioInstance.muted = false;
     }
   }
 
@@ -381,8 +389,8 @@ class AudioX {
   }
 
   castAudio() {
-    const casting = new CastAdapter();
-    casting.castAudio();
+    const adapter = new CastAdapter();
+    adapter.castAudio();
   }
 
   /**
@@ -541,6 +549,14 @@ class AudioX {
         this._queue.push(mediaTracks);
       }
     }
+  }
+
+  getCurrentQueueIndex() {
+    return this._currentQueueIndex;
+  }
+
+  setCurrentQueueIndex(index: number) {
+    this._currentQueueIndex = index;
   }
 
   toggleShuffle() {

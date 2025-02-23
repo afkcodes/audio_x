@@ -30,6 +30,7 @@ export interface MediaTrack {
   comment?: string;
   year?: number | string;
   artist?: string;
+  isCasting?: boolean;
 }
 
 export interface AudioInit {
@@ -69,6 +70,8 @@ export interface AudioState {
   currentTrack: MediaTrack;
   currentTrackPlayTime: number;
   previousTrackPlayTime: number;
+  isCasting: boolean;
+  castDevice: string | null;
 }
 
 export type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';

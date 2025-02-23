@@ -3278,6 +3278,13 @@ type EventListenerCallbackMap = {
     [key in keyof Partial<AudioEvents>]: (e: Event, audioInstance: HTMLAudioElement, playLogEnabled: boolean) => void;
 };
 
+interface JoinPolicy {
+    ORIGIN_SCOPED: string;
+    TAB_AND_ORIGIN_SCOPED: string;
+    PAGE_SCOPED: string;
+    CUSTOM_CONTROLLER_SCOPED: string;
+}
+
 type InitMode = 'REACT' | 'VANILLA';
 type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
 type Preload = 'none' | 'metadata' | 'auto' | '';
@@ -3298,6 +3305,7 @@ interface MediaTrack {
     comment?: string;
     year?: number | string;
     artist?: string;
+    isCasting?: boolean;
 }
 interface AudioInit {
     mode: InitMode;
@@ -3312,6 +3320,11 @@ interface AudioInit {
     enableEQ?: boolean;
     crossOrigin?: 'anonymous' | 'use-credentials' | null;
     hlsConfig?: HlsConfig | {};
+    enableCasting?: boolean;
+    castConfig?: {
+        receiverId: string;
+        joinPolicy: keyof JoinPolicy;
+    };
 }
 interface AudioError {
     code: number | string | null;
@@ -3329,6 +3342,8 @@ interface AudioState {
     currentTrack: MediaTrack;
     currentTrackPlayTime: number;
     previousTrackPlayTime: number;
+    isCasting: boolean;
+    castDevice: string | null;
 }
 type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';
 type LoopMode = 'SINGLE' | 'QUEUE' | 'OFF';
@@ -3347,19 +3362,19 @@ interface Preset {
 type EqualizerStatus = 'ACTIVE' | 'FAILED' | 'IDEAL';
 
 declare class AudioX {
-    private _audio;
-    private isPlayLogEnabled;
     private static _instance;
-    private _queue;
-    private _currentQueueIndex;
-    private _fetchFn;
-    private eqStatus;
-    private isEqEnabled;
+    private _audio;
     private eqInstance;
     private showNotificationsActions;
     private originalQueue;
     private isShuffled;
     private loopMode;
+    private _queue;
+    private isPlayLogEnabled;
+    private isEqEnabled;
+    private _currentQueueIndex;
+    private eqStatus;
+    private _fetchFn;
     constructor();
     init(initProps: AudioInit): Promise<void>;
     addMedia(mediaTrack: MediaTrack, mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>): Promise<void>;
@@ -3372,17 +3387,14 @@ declare class AudioX {
     setVolume(volume: number): void;
     setPlaybackRate(playbackRate: PlaybackRate): void;
     mute(): void;
+    unmute(): void;
     seek(time: number): void;
     seekBy(time: number): void;
     destroy(): Promise<void>;
-    subscribe(eventName: string, callback: (data: any) => void, state?: any): () => void;
+    castAudio(): void;
+    subscribe(eventName: string, callback: (data: any) => void, state?: any): Function;
     addEventListener(event: keyof HTMLMediaElementEventMap, callback: (data: any) => void): void;
-    getPresets(): {
-        name: string;
-        id: string;
-        default: boolean;
-        gains: number[];
-    }[];
+    getPresets(): Preset[];
     setPreset(id: keyof Preset): void;
     setCustomEQ(gains: number[]): void;
     setBassBoost(enabled: boolean, boost: number): void;
@@ -3391,12 +3403,15 @@ declare class AudioX {
     playPrevious(): void;
     clearQueue(): void;
     addToQueue(mediaTracks: MediaTrack | MediaTrack[]): void;
+    getCurrentQueueIndex(): number;
+    setCurrentQueueIndex(index: number): void;
     toggleShuffle(): void;
     loop(loopMode: LoopMode): void;
     isShuffledEnabled(): boolean;
     getLoopMode(): LoopMode;
     removeFromQueue(mediaTrack: MediaTrack): void;
     getQueue(): MediaTrack[];
+    getAudioState(): AudioState;
     get id(): string | null;
     static getAudioInstance(): HTMLAudioElement;
 }
@@ -3433,4 +3448,4 @@ declare const AUDIO_EVENTS: AudioEvents;
 
 declare const AUDIO_STATE: AudioState;
 
-export { AUDIO_EVENTS, AUDIO_STATE, AUDIO_X_CONSTANTS, type AudioError, type AudioEvents, type AudioInit, type AudioState, AudioX, type Band, type EqualizerStatus, type ErrorEvents, type EventListenerCallbackMap, type EventListenersList, type InitMode, type MediaArtwork, type MediaTrack, type NetworkState, type PlayBackState, type PlaybackRate, type Preset, type QueuePlaybackType, type ReadyState };
+export { AUDIO_EVENTS, AUDIO_STATE, AUDIO_X_CONSTANTS, type AudioError, type AudioEvents, type AudioInit, type AudioState, AudioX, type Band, type EqualizerStatus, type ErrorEvents, type EventListenerCallbackMap, type EventListenersList, type InitMode, type JoinPolicy, type MediaArtwork, type MediaTrack, type NetworkState, type PlayBackState, type PlaybackRate, type Preset, type QueuePlaybackType, type ReadyState };

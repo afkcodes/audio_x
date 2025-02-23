@@ -26,7 +26,9 @@ export const AUDIO_STATE: AudioState = {
   },
   currentTrack: {} as MediaTrack,
   currentTrackPlayTime: 0,
-  previousTrackPlayTime: 0
+  previousTrackPlayTime: 0,
+  isCasting: false,
+  castDevice: null
 };
 
 /* Listen to state changes and update global audio state that is being exposed to outer world

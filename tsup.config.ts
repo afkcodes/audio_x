@@ -9,7 +9,7 @@ const config: Options = {
   treeshake: true,
   target: 'es6',
   esbuildOptions(options, context) {
-    options.drop = ['console', 'debugger'];
+    // options.drop = ['console', 'debugger'];
   },
   terserOptions: {
     mangle: {
