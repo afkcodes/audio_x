@@ -7,8 +7,16 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsup src/index.ts",
-    "start": "npm run build -- --watch"
+    "build": "npm run clean && tsup src/index.ts",
+    "start": "npm run build -- --watch",
+    "release": "release-it",
+    "lint": "biome check .",
+    "lint:apply": "biome check --write .",
+    "format": "biome format --write .",
+    "clean": "rimraf dist",
+    "release:patch": "release-it patch",
+    "release:minor": "release-it minor",
+    "release:major": "release-it major"
   },
   "keywords": [
     "npm",
@@ -31,14 +39,22 @@
   "author": "Ashish Kumar",
   "license": "MIT",
   "devDependencies": {
-    "@swc/core": "^1.10.15",
-    "@types/node": "^22.13.1",
-    "terser": "^5.38.1",
-    "tsup": "^8.3.6",
-    "typescript": "^5.7.3"
+    "@biomejs/biome": "^1.9.4",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@release-it/conventional-changelog": "^10.0.0",
+    "@swc/core": "^1.11.21",
+    "@types/node": "^22.14.1",
+    "commitlint": "^19.8.0",
+    "lefthook": "^1.11.10",
+    "release-it": "^18.1.2",
+    "rimraf": "^6.0.1",
+    "terser": "^5.39.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/afkcodes/audio_x.git"
-  }
+  },
+  "packageManager": "yarn@4.9.0"
 }
