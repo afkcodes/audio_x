@@ -1,0 +1,26 @@
+{
+  "git": {
+    "requireBranch": "main",
+    "commitMessage": "chore: release v${version}",
+    "tagName": "v${version}",
+    "pushRepo": "origin"
+  },
+  "npm": {
+    "publish": true,
+    "registry": "https://registry.npmjs.org/"
+  },
+  "github": {
+    "release": true,
+    "releaseName": "Release v${version}"
+  },
+  "hooks": {
+    "after:bump": ["npm run build"],
+    "after:release": "npm run deploy:prod"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "infile": "CHANGELOG.md"
+    }
+  }
+}
