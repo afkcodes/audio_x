@@ -11,25 +11,22 @@ import {
   handleQueuePlayback,
   isValidArray,
   isValidFunction,
-  isValidObject
+  isValidObject,
 } from 'helpers/common';
 import ChangeNotifier from 'helpers/notifier';
 import { shuffleQueue } from 'helpers/shuffleHelper';
 
-import {
-  attachMediaSessionHandlers,
-  updateMetaData
-} from 'mediasession/mediasessionHandler';
+import { attachMediaSessionHandlers, updateMetaData } from 'mediasession/mediasessionHandler';
 import { READY_STATE } from 'states/audioState';
-import {
+import type {
   AudioInit,
   AudioState,
   LoopMode,
   MediaTrack,
   PlaybackRate,
-  QueuePlaybackType
+  QueuePlaybackType,
 } from 'types/audio.types';
-import { EqualizerStatus, Preset } from 'types/equalizer.types';
+import type { EqualizerStatus, Preset } from 'types/equalizer.types';
 
 // Holds the singleton instance of the HTMLAudioElement
 let audioInstance: HTMLAudioElement;
@@ -42,17 +39,18 @@ class AudioX {
   private static _instance: AudioX;
   private _audio: HTMLAudioElement;
   private eqInstance: Equalizer;
-  private showNotificationsActions: boolean = false;
+  private showNotificationsActions = false;
   private originalQueue: MediaTrack[] = [];
-  private isShuffled: boolean = false;
+  private isShuffled = false;
   private loopMode: LoopMode = 'OFF';
   private _queue: MediaTrack[];
-  private isPlayLogEnabled: boolean = false;
-  // private isCastingEnabled: boolean = false;
-  private isEqEnabled: boolean = false;
-  private _currentQueueIndex: number = 0;
-  private eqStatus: EqualizerStatus = 'IDEAL';
+  private isPlayLogEnabled = false;
+  private isCastingEnabled = false;
+  private isEqEnabled = false;
+  private _currentQueueIndex = 0;
+  private eqStatus: EqualizerStatus = 'IDLE';
   private _fetchFn: (mediaTrack: MediaTrack) => Promise<void>;
+  private castButtonId = 'cast-button-container';
 
   /**
    * Constructor for the AudioX class.
@@ -61,14 +59,12 @@ class AudioX {
   constructor() {
     if (AudioX._instance) {
       console.warn(
-        'Instantiation failed: cannot create multiple instance of AudioX returning existing instance'
+        'Instantiation failed: cannot create multiple instance of AudioX returning existing instance',
       );
+      // biome-ignore lint/correctness/noConstructorReturn: <explanation>
       return AudioX._instance;
     }
-    if (
-      process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
-      audioInstance
-    ) {
+    if (process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT && audioInstance) {
       throw new Error('Cannot create multiple audio instance');
     }
 
@@ -94,7 +90,7 @@ class AudioX {
       crossOrigin = null,
       hlsConfig = {},
       enableCasting = false,
-      castConfig
+      castConfig,
     } = initProps;
 
     // Set audio element attributes
@@ -104,13 +100,14 @@ class AudioX {
     this._audio.crossOrigin = crossOrigin;
     this.isPlayLogEnabled = enablePlayLog;
     this.isEqEnabled = enableEQ;
+    this.isCastingEnabled = enableCasting;
 
     // Attach event listeners
     if (customEventListeners !== null) {
       if (useDefaultEventListeners) {
         console.warn(
           `useDefaultEventListeners is set to true at init, are you trying to use the default event listeners?
-            set customEventListeners to null to use default event listeners`
+          set customEventListeners to null to use default event listeners`,
         );
       }
       attachEventListeners(customEventListeners, false);
@@ -132,30 +129,189 @@ class AudioX {
     // Initialize HLS playback if enabled
     if (enableHls) {
       const hls = new HlsAdapter();
-      hls.init(hlsConfig, enablePlayLog);
+      await hls.init(hlsConfig, enablePlayLog);
     }
 
-    // Initialize casting if enabled
+    // Initialize casting if enabled - but don't await it to prevent blocking
     if (enableCasting) {
-      const cast = new CastAdapter();
-      const castReceiverId =
-        castConfig?.receiverId || DEFAULT_CAST_CONFIG.receiverId;
-      const castJoinPolicy =
-        castConfig?.joinPolicy || DEFAULT_CAST_CONFIG.joinPolicy;
-      cast.init(castReceiverId, castJoinPolicy, enablePlayLog);
+      this.isCastingEnabled = true;
+      try {
+        // We intentionally don't await this to prevent initialization issues
+        // from blocking the entire AudioX initialization
+        const cast = new CastAdapter();
+        const castReceiverId = castConfig?.receiverId || DEFAULT_CAST_CONFIG.receiverId;
+        const castJoinPolicy = castConfig?.joinPolicy || DEFAULT_CAST_CONFIG.joinPolicy;
 
-      if (!castConfig) {
-        console.warn(
-          'initializing cast framework with default cast config, please provide cast config'
+        // Start the initialization process
+        cast
+          .init(castReceiverId, castJoinPolicy)
+          .then(() => {
+            console.log('Cast initialization completed successfully');
+          })
+          .catch((error) => {
+            console.warn('Cast initialization completed with errors:', error);
+            // Still mark casting as enabled, since the user may be able to cast later
+            this.isCastingEnabled = true;
+          });
+
+        if (!castConfig) {
+          console.warn(
+            'initializing cast framework with default cast config, please provide cast config',
+          );
+        }
+      } catch (e) {
+        console.warn('Failed to initialize Cast, but continuing AudioX initialization:', e);
+        // Don't disable casting here - it might work later
+      }
+    }
+
+    console.log('audio_x initialized');
+    return this;
+  }
+
+  /**
+   * Initialize casting support.
+   * This should be called after the AudioX instance is initialized.
+   * @param {string} receiverId - The Cast receiver application ID.
+   * @param {string} containerId - The ID of the HTML element to contain the cast button.
+   */
+  initializeCasting(receiverId?: string, containerId?: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (!this.isCastingEnabled) {
+        const warning = 'Casting is not enabled. Enable it during AudioX initialization.';
+        console.warn(warning);
+        reject(new Error(warning));
+        return;
+      }
+
+      // Delay the initialization slightly to ensure DOM is ready
+      setTimeout(() => {
+        const cast = new CastAdapter();
+
+        // Initialize the cast framework
+        cast
+          .init(receiverId)
+          .then(() => {
+            // Create cast button in the specified container
+            if (containerId) {
+              this.castButtonId = containerId;
+              cast.createCastButton(containerId);
+              console.log(this.castButtonId);
+            }
+
+            // Listen for cast state changes
+            this.subscribe('CAST_STATE', this.handleCastStateChange.bind(this));
+
+            console.log('Cast initialization and UI setup completed');
+            resolve();
+          })
+          .catch((error) => {
+            console.error('Failed to initialize casting:', error);
+            // Don't reject - we still want the AudioX instance to work without casting
+            resolve();
+          });
+      }, 500);
+    });
+  }
+
+  /**
+   * Handle cast state changes.
+   * @param {any} state - The cast state.
+   */
+  private handleCastStateChange(state: any): void {
+    if (state.isCasting) {
+      console.log('Cast session active');
+      // Pause local playback when casting begins
+      if (!this._audio.paused) {
+        this._audio.pause();
+      }
+    } else {
+      console.log('Cast session ended');
+      // When casting ends, resume local playback
+      // at the current position from the cast device
+      // This would require keeping track of the position
+      const audioState = this.getAudioState();
+      if (audioState.currentTrack?.source) {
+        // Make sure the current track is loaded locally
+        if (this._audio.src !== audioState.currentTrack.source) {
+          this._audio.src = audioState.currentTrack.source;
+          this._audio.load();
+        }
+
+        // Set the playback position based on the progress from the cast device
+        if (audioState.progress && !Number.isNaN(audioState.progress)) {
+          this._audio.currentTime = audioState.progress;
+        }
+
+        // If the cast was playing, resume local playback
+        if (audioState.playbackState === PLAYBACK_STATE.PLAYING) {
+          this._audio.play().catch((error) => {
+            console.warn('Failed to resume local playback:', error);
+          });
+        }
+
+        console.log(
+          `Resumed local playback of "${audioState.currentTrack.title}" at ${audioState.progress} seconds`,
         );
       }
     }
   }
 
-  async addMedia(
-    mediaTrack: MediaTrack,
-    mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>
-  ) {
+  /**
+   * Start casting the current audio.
+   */
+  startCasting(): void {
+    if (!this.isCastingEnabled) {
+      console.warn('Casting is not enabled. Enable it during AudioX initialization.');
+      return;
+    }
+
+    const cast = new CastAdapter();
+    cast.castAudio();
+  }
+
+  /**
+   * Stop casting and return to local playback.
+   * @param {boolean} resumeLocal - Whether to resume local playback after stopping cast.
+   */
+  stopCasting(resumeLocal = false): void {
+    if (!this.isCastingEnabled) {
+      return;
+    }
+
+    const cast = new CastAdapter();
+    const playerState = cast.getPlayerState();
+    const currentTime = cast.getRemotePlayer()?.currentTime || 0;
+
+    // Stop casting
+    cast.stopCasting();
+
+    // Resume local playback if requested
+    if (resumeLocal) {
+      this._audio.currentTime = currentTime;
+
+      if (playerState === 'PLAYING') {
+        this._audio.play().catch((err) => {
+          console.warn('Could not resume local playback:', err);
+        });
+      }
+    }
+  }
+
+  /**
+   * Check if currently casting.
+   * @returns {boolean} True if currently casting, false otherwise.
+   */
+  isCasting(): boolean {
+    if (!this.isCastingEnabled) {
+      return false;
+    }
+
+    const cast = new CastAdapter();
+    return cast.isConnected() && cast.isMediaLoaded();
+  }
+
+  async addMedia(mediaTrack: MediaTrack, mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>) {
     if (!mediaTrack) {
       return;
     }
@@ -179,10 +335,7 @@ class AudioX {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
 
-    if (
-      mediaType === 'HLS' &&
-      !audioInstance.canPlayType('application/vnd.apple.mpegurl')
-    ) {
+    if (mediaType === 'HLS' && !audioInstance.canPlayType('application/vnd.apple.mpegurl')) {
       const hls = new HlsAdapter();
       const hlsInstance = hls.getHlsInstance();
       if (hlsInstance) {
@@ -190,7 +343,7 @@ class AudioX {
         hls.addHlsMedia(mediaTrack);
       } else {
         console.warn(
-          'The source provided seems to be a HLS stream but, hls playback is not enabled. Please have a look at init method of AudioX'
+          'The source provided seems to be a HLS stream but, hls playback is not enabled. Please have a look at init method of AudioX',
         );
         await this.reset();
       }
@@ -203,7 +356,7 @@ class AudioX {
     notifier.notify('AUDIO_STATE', {
       playbackState: PLAYBACK_STATE.TRACK_CHANGE,
       currentTrackPlayTime: 0,
-      currentTrack: mediaTrack
+      currentTrack: mediaTrack,
     });
 
     updateMetaData(mediaTrack);
@@ -214,12 +367,12 @@ class AudioX {
    * Attaches the equalizer to the audio instance.
    */
   attachEq() {
-    if (this.eqStatus === 'IDEAL') {
+    if (this.eqStatus === 'IDLE') {
       try {
         const eq = new Equalizer();
         this.eqStatus = eq.status();
         this.eqInstance = eq;
-      } catch (e) {
+      } catch (_e) {
         console.log('failed to enable equalizer');
       }
     }
@@ -229,6 +382,16 @@ class AudioX {
    * Plays the audio.
    */
   async play() {
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+
+      // If casting and media is loaded, play on cast device
+      if (cast.isConnected() && cast.isMediaLoaded()) {
+        cast.play();
+        return;
+      }
+    }
+
     const isSourceAvailable = audioInstance.src !== '';
     if (
       audioInstance?.paused &&
@@ -256,32 +419,55 @@ class AudioX {
    */
   async addMediaAndPlay(
     mediaTrack?: MediaTrack | null,
-    fetchFn?: (mediaTrack: MediaTrack) => Promise<void>
+    fetchFn?: (mediaTrack: MediaTrack) => Promise<void>,
     // this should be passed when there something needs to be done before the audio starts playing
   ) {
-    const currentTrack =
-      mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
+    const currentTrack = mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
+
+    if (!currentTrack) {
+      console.error('Playback Failed, No MediaTrack Provided');
+      return;
+    }
+
+    // Call fetch function if provided
     if (fetchFn && isValidFunction(fetchFn) && currentTrack?.source.length) {
       this._fetchFn = fetchFn;
       await fetchFn(currentTrack as MediaTrack);
     }
-    try {
-      if (currentTrack) {
-        this.addMedia(currentTrack).then(() => {
-          if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
-            setTimeout(async () => {
-              await this.play();
-              if (this.isEqEnabled) {
-                this.attachEq();
-              }
-            }, 950);
-          }
+
+    // If casting and connected, load directly on cast device
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+      if (cast.isConnected()) {
+        // Update state and metadata
+        notifier.notify('AUDIO_STATE', {
+          playbackState: PLAYBACK_STATE.TRACK_CHANGE,
+          currentTrackPlayTime: 0,
+          currentTrack: currentTrack,
         });
-      } else {
-        console.error('Playback Failed, No MediaTrack Provided');
+
+        updateMetaData(currentTrack);
+
+        // Load on cast device
+        cast.loadMedia(currentTrack);
+        return;
       }
+    }
+
+    // Otherwise load locally
+    try {
+      await this.addMedia(currentTrack).then(() => {
+        if (audioInstance.HAVE_ENOUGH_DATA === READY_STATE.HAVE_ENOUGH_DATA) {
+          setTimeout(async () => {
+            await this.play();
+            if (this.isEqEnabled) {
+              this.attachEq();
+            }
+          }, 950);
+        }
+      });
     } catch (error) {
-      console.error('Playback Failed');
+      console.error('Playback Failed:', error);
     }
   }
 
@@ -289,6 +475,17 @@ class AudioX {
    * Pauses the audio playback.
    */
   pause() {
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+
+      // If casting and media is loaded, pause on cast device
+      if (cast.isConnected() && cast.isMediaLoaded()) {
+        cast.pause();
+        return;
+      }
+    }
+
+    // Otherwise pause locally
     if (audioInstance && !audioInstance?.paused) {
       audioInstance?.pause();
     }
@@ -298,6 +495,19 @@ class AudioX {
    * Stops the audio playback and resets the current time to 0.
    */
   stop() {
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+
+      // If casting and connected, stop on cast device
+      if (cast.isConnected()) {
+        // First stop the remote playback
+        if (cast.isMediaLoaded()) {
+          cast.stopCasting();
+        }
+      }
+    }
+
+    // Also stop locally
     if (audioInstance && !audioInstance.paused) {
       audioInstance?.pause();
       audioInstance.currentTime = 0;
@@ -309,6 +519,15 @@ class AudioX {
    * @method reset
    */
   async reset() {
+    // If casting, stop the cast session
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+      if (cast.isConnected()) {
+        cast.stopCasting();
+      }
+    }
+
+    // Reset local playback
     if (audioInstance) {
       this.stop();
       audioInstance.src = '';
@@ -321,11 +540,21 @@ class AudioX {
    * @param {number} volume - The volume level (1-100).
    */
   setVolume(volume: number) {
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+
+      // If casting and connected, set volume on cast device
+      if (cast.isConnected()) {
+        cast.setVolume(volume);
+      }
+    }
+
+    // Always set local volume too
     const actualVolume = volume / 100;
     if (audioInstance) {
       audioInstance.volume = actualVolume;
       notifier.notify('AUDIO_STATE', {
-        volume: volume
+        volume: volume,
       });
     }
   }
@@ -338,7 +567,7 @@ class AudioX {
     if (audioInstance) {
       audioInstance.playbackRate = playbackRate;
       notifier.notify('AUDIO_STATE', {
-        playbackRate
+        playbackRate,
       });
     }
   }
@@ -347,6 +576,17 @@ class AudioX {
    * Mutes the audio instance.
    */
   mute() {
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+      if (cast.isConnected() && cast.getRemotePlayerController()) {
+        // Mute the cast device
+        const controller = cast.getRemotePlayerController();
+        controller.muteOrUnmute();
+        return;
+      }
+    }
+
+    // Mute local audio
     if (audioInstance && !audioInstance.muted) {
       audioInstance.muted = true;
     }
@@ -357,13 +597,39 @@ class AudioX {
    * @param {number} time - The time to seek to (in seconds).
    */
   seek(time: number) {
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+
+      // If casting and media is loaded, seek on cast device
+      if (cast.isConnected() && cast.isMediaLoaded()) {
+        cast.seek(time);
+        return;
+      }
+    }
+
+    // Otherwise seek locally
     if (audioInstance) {
       audioInstance.currentTime = time;
     }
   }
 
   seekBy(time: number) {
-    if (audioInstance && audioInstance.currentTime) {
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+
+      // If casting and media is loaded, seek on cast device
+      if (cast.isConnected() && cast.isMediaLoaded()) {
+        const player = cast.getRemotePlayer();
+        if (player) {
+          const newTime = player.currentTime + time;
+          cast.seek(newTime);
+        }
+        return;
+      }
+    }
+
+    // Otherwise seek locally
+    if (audioInstance?.currentTime) {
       const currentProgress = audioInstance.currentTime;
       audioInstance.currentTime = currentProgress + time;
     }
@@ -373,6 +639,15 @@ class AudioX {
    * Destroys the audio instance, resetting and clearing the source.
    */
   async destroy() {
+    // If casting, stop the cast session
+    if (this.isCastingEnabled) {
+      const cast = new CastAdapter();
+      if (cast.isConnected()) {
+        cast.stopCasting();
+      }
+    }
+
+    // Destroy local audio instance
     if (audioInstance) {
       await this.reset();
       audioInstance.removeAttribute('src');
@@ -380,9 +655,17 @@ class AudioX {
     }
   }
 
+  /**
+   * Initiates casting of the current audio to a Cast device.
+   */
   castAudio() {
-    const casting = new CastAdapter();
-    casting.castAudio();
+    if (!this.isCastingEnabled) {
+      console.warn('Casting is not enabled. Enable it during AudioX initialization.');
+      return;
+    }
+
+    const cast = new CastAdapter();
+    cast.castAudio();
   }
 
   /**
@@ -392,11 +675,7 @@ class AudioX {
    * @param {any} [state] - The state to pass to the callback.
    * @returns {Function} The unsubscribe function.
    */
-  subscribe(
-    eventName: string,
-    callback: (data: any) => void,
-    state: any = {}
-  ): Function {
+  subscribe(eventName: string, callback: (data: any) => void, state: any = {}): () => void {
     const unsubscribe = notifier.listen(eventName, callback, state);
     return unsubscribe;
   }
@@ -406,10 +685,7 @@ class AudioX {
    * @param {keyof HTMLMediaElementEventMap} event - The event name.
    * @param {(data: any) => void} callback - The callback function.
    */
-  addEventListener(
-    event: keyof HTMLMediaElementEventMap,
-    callback: (data: any) => void
-  ) {
+  addEventListener(event: keyof HTMLMediaElementEventMap, callback: (data: any) => void) {
     audioInstance.addEventListener(event, callback);
   }
 
@@ -473,11 +749,12 @@ class AudioX {
       case 'REVERSE':
         this._queue = playerQueue.reverse();
         break;
-      case 'SHUFFLE':
+      case 'SHUFFLE': {
         const newQueue = shuffleQueue(playerQueue, currentTrack?.id);
         this.addQueue(newQueue, 'DEFAULT');
         this.isShuffled = true;
         break;
+      }
       default:
         this._queue = playerQueue;
         break;
@@ -497,13 +774,26 @@ class AudioX {
     const index = this._currentQueueIndex + 1;
     if (this?._queue?.length > index) {
       const nextTrack = this._queue[index];
+
+      // Check if we're currently casting
+      if (this.isCastingEnabled) {
+        const cast = new CastAdapter();
+        if (cast.isConnected() && cast.isMediaLoaded()) {
+          // Use the CastAdapter's playNext for casting
+          cast.playNext(nextTrack);
+          this._currentQueueIndex = index;
+          return;
+        }
+      }
+
+      // If not casting, use the standard playback
       this.addMediaAndPlay(nextTrack, this._fetchFn);
       this._currentQueueIndex = index;
     } else {
       // stop the audio and end trigger queue ended
       this.stop();
       notifier.notify('AUDIO_STATE', {
-        playbackState: PLAYBACK_STATE.QUEUE_ENDED
+        playbackState: PLAYBACK_STATE.QUEUE_ENDED,
       });
     }
   }
@@ -516,6 +806,19 @@ class AudioX {
 
     if (index >= 0) {
       const previousTrack = this?._queue[index];
+
+      // Check if we're currently casting
+      if (this.isCastingEnabled) {
+        const cast = new CastAdapter();
+        if (cast.isConnected() && cast.isMediaLoaded()) {
+          // Use the CastAdapter's playPrevious for casting
+          cast.playPrevious(previousTrack);
+          this._currentQueueIndex = index;
+          return;
+        }
+      }
+
+      // If not casting, use the standard playback
       this.addMediaAndPlay(previousTrack, this._fetchFn);
       this._currentQueueIndex = index;
     } else {
@@ -595,9 +898,7 @@ class AudioX {
    */
   removeFromQueue(mediaTrack: MediaTrack) {
     if (this._queue && isValidArray(this._queue)) {
-      const queue = this._queue.filter(
-        (track: MediaTrack) => track.id == mediaTrack.id
-      );
+      const queue = this._queue.filter((track: MediaTrack) => track.id === mediaTrack.id);
       this._queue = queue;
     }
   }

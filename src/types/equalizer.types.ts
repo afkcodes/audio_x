@@ -11,4 +11,4 @@ export interface Preset {
   gains: number[];
 }
 
-export type EqualizerStatus = 'ACTIVE' | 'FAILED' | 'IDEAL';
+export type EqualizerStatus = 'ACTIVE' | 'FAILED' | 'IDLE';

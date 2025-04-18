@@ -1,21 +1,17 @@
 import { AudioX } from 'audio';
 import { ERROR_MSG_MAP } from 'constants/common';
-import { AudioEvents, AudioState, MediaTrack } from 'types';
-import { LoopMode } from 'types/audio.types';
-import { GenericMediaTrack } from 'types/cast.types';
+import type { AudioEvents, AudioState, MediaTrack } from 'types';
+import type { LoopMode } from 'types/audio.types';
+import type { GenericMediaTrack } from 'types/cast.types';
 import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
-const isValidFunction = (fn: any) =>
-  fn instanceof Function && typeof fn === 'function';
+const isValidFunction = (fn: any) => fn instanceof Function && typeof fn === 'function';
 
 const isValidObject = (obj: any) =>
-  typeof obj === 'object' &&
-  obj !== null &&
-  obj instanceof Object &&
-  Object.keys(obj).length;
+  typeof obj === 'object' && obj !== null && obj instanceof Object && Object.keys(obj).length;
 
-const isValidWindow = typeof window !== undefined && window instanceof Window;
+const isValidWindow = typeof window !== 'undefined';
 
 const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
   let message = '';
@@ -23,19 +19,19 @@ const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
 
   switch (err?.code) {
     case MediaError.MEDIA_ERR_ABORTED:
-      message += ERROR_MSG_MAP['MEDIA_ERR_ABORTED'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_ABORTED;
       break;
     case MediaError.MEDIA_ERR_NETWORK:
-      message += ERROR_MSG_MAP['MEDIA_ERR_NETWORK'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_NETWORK;
       break;
     case MediaError.MEDIA_ERR_DECODE:
-      message += ERROR_MSG_MAP['MEDIA_ERR_DECODE'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_DECODE;
       break;
     case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-      message += ERROR_MSG_MAP['MEDIA_ERR_SRC_NOT_SUPPORTED'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_SRC_NOT_SUPPORTED;
       break;
     default:
-      message += ERROR_MSG_MAP['DEFAULT'];
+      message += ERROR_MSG_MAP.DEFAULT;
       break;
   }
 
@@ -45,14 +41,7 @@ const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
 const metaDataCreator = (mediaTrack: MediaTrack) => {
   const { title, album, artist, artwork } = mediaTrack;
   const artworkUrl = artwork ? artwork[0]?.src : '';
-  const sizes = [
-    '96x96',
-    '128x128',
-    '192x192',
-    '256x256',
-    '384x384',
-    '512x512'
-  ];
+  const sizes = ['96x96', '128x128', '192x192', '256x256', '384x384', '512x512'];
   const artworkMap = sizes.map((el) => {
     return { src: artworkUrl, sizes: el, type: 'image/png' };
   });
@@ -60,7 +49,7 @@ const metaDataCreator = (mediaTrack: MediaTrack) => {
     title,
     album,
     artist,
-    artwork: artworkMap
+    artwork: artworkMap,
   };
   return metaData;
 };
@@ -68,7 +57,7 @@ const metaDataCreator = (mediaTrack: MediaTrack) => {
 let previousTrackPlayTime = 0;
 export const calculateActualPlayedLength = (
   audioInstance: HTMLAudioElement,
-  event?: keyof AudioEvents
+  event?: keyof AudioEvents,
 ) => {
   const lengthSet = new Set();
   for (let i = 0; i < audioInstance.played.length; i++) {
@@ -80,25 +69,18 @@ export const calculateActualPlayedLength = (
   const lengthArr = [...lengthSet] as number[];
   const currentTrackPlayTime = lengthArr.reduce((acc, val) => acc + val, 0);
 
-  previousTrackPlayTime = ['ENDED', 'TRACK_CHANGE', 'PAUSE'].includes(
-    event as keyof AudioEvents
-  )
+  previousTrackPlayTime = ['ENDED', 'TRACK_CHANGE', 'PAUSE'].includes(event as keyof AudioEvents)
     ? currentTrackPlayTime
     : previousTrackPlayTime;
   ChangeNotifier.notify('AUDIO_STATE', {
     currentTrackPlayTime,
-    previousTrackPlayTime
+    previousTrackPlayTime,
   });
 };
 
 const loadedScripts: { [key: string]: boolean } = {};
 
-const loadScript = (
-  url: string,
-  onLoad: () => void,
-  name: string,
-  async: boolean = true
-): Promise<void> => {
+const loadScript = (url: string, onLoad: () => void, name: string, async = true): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     if (window instanceof Window && window.document) {
       if (!loadedScripts[name]) {
@@ -244,7 +226,7 @@ const createCastMediaTrack = (currentTrack: MediaTrack) => {
     artist: currentTrack.artist,
     albumName: currentTrack.album,
     subtitle: currentTrack.comment,
-    releaseDate: currentTrack.year as string
+    releaseDate: currentTrack.year as string,
   };
 
   return castMediaTrack;
@@ -263,5 +245,5 @@ export {
   isValidWindow,
   loadScript,
   metaDataCreator,
-  shuffle
+  shuffle,
 };
