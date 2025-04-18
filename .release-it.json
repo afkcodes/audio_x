@@ -6,7 +6,8 @@
     "pushRepo": "origin"
   },
   "npm": {
-    "publish": false
+    "publish": true,
+    "registry": "https://registry.npmjs.org/"
   },
   "github": {
     "release": true,
