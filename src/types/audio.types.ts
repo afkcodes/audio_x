@@ -1,5 +1,6 @@
-import { HlsConfig } from 'types/hls.js';
-import { EventListenerCallbackMap } from './audioEvents.types';
+import type { HlsConfig } from 'types/hls.js';
+import type { EventListenerCallbackMap } from './audioEvents.types';
+import type { JoinPolicy } from './cast.types';
 
 export type InitMode = 'REACT' | 'VANILLA';
 export type PlaybackRate = 1.0 | 1.25 | 1.5 | 1.75 | 2.0 | 2.5 | 3.0;
@@ -43,7 +44,12 @@ export interface AudioInit {
   enableHls?: boolean;
   enableEQ?: boolean;
   crossOrigin?: 'anonymous' | 'use-credentials' | null;
-  hlsConfig?: HlsConfig | {};
+  hlsConfig?: HlsConfig;
+  enableCasting?: boolean;
+  castConfig?: {
+    receiverId: string;
+    joinPolicy: keyof JoinPolicy;
+  };
 }
 
 export interface AudioError {
@@ -63,6 +69,7 @@ export interface AudioState {
   currentTrack: MediaTrack;
   currentTrackPlayTime: number;
   previousTrackPlayTime: number;
+  castDevice: string;
 }
 
 export type QueuePlaybackType = 'DEFAULT' | 'REVERSE' | 'SHUFFLE';

@@ -1,21 +1,17 @@
 import { AudioX } from 'audio';
 import { ERROR_MSG_MAP } from 'constants/common';
-import { AudioEvents, AudioState, MediaTrack } from 'types';
-import { LoopMode } from 'types/audio.types';
+import type { AudioEvents, AudioState, MediaTrack } from 'types';
+import type { LoopMode } from 'types/audio.types';
+import type { GenericMediaTrack } from 'types/cast.types';
 import ChangeNotifier from './notifier';
 
 const isValidArray = (arr: any[]) => arr && Array.isArray(arr) && arr.length;
-const isValidFunction = (fn: any) =>
-  fn instanceof Function && typeof fn === 'function';
+const isValidFunction = (fn: any) => fn instanceof Function && typeof fn === 'function';
 
 const isValidObject = (obj: any) =>
-  typeof obj === 'object' &&
-  obj !== null &&
-  obj instanceof Object &&
-  Object.keys(obj).length;
+  typeof obj === 'object' && obj !== null && obj instanceof Object && Object.keys(obj).length;
 
-const isValidWindow = typeof window !== undefined && window instanceof Window;
-const loadedScripts: any = {};
+const isValidWindow = typeof window !== 'undefined';
 
 const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
   let message = '';
@@ -23,19 +19,19 @@ const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
 
   switch (err?.code) {
     case MediaError.MEDIA_ERR_ABORTED:
-      message += ERROR_MSG_MAP['MEDIA_ERR_ABORTED'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_ABORTED;
       break;
     case MediaError.MEDIA_ERR_NETWORK:
-      message += ERROR_MSG_MAP['MEDIA_ERR_NETWORK'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_NETWORK;
       break;
     case MediaError.MEDIA_ERR_DECODE:
-      message += ERROR_MSG_MAP['MEDIA_ERR_DECODE'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_DECODE;
       break;
     case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-      message += ERROR_MSG_MAP['MEDIA_ERR_SRC_NOT_SUPPORTED'];
+      message += ERROR_MSG_MAP.MEDIA_ERR_SRC_NOT_SUPPORTED;
       break;
     default:
-      message += ERROR_MSG_MAP['DEFAULT'];
+      message += ERROR_MSG_MAP.DEFAULT;
       break;
   }
 
@@ -45,14 +41,7 @@ const getReadableErrorMessage = (audioInstance: HTMLAudioElement) => {
 const metaDataCreator = (mediaTrack: MediaTrack) => {
   const { title, album, artist, artwork } = mediaTrack;
   const artworkUrl = artwork ? artwork[0]?.src : '';
-  const sizes = [
-    '96x96',
-    '128x128',
-    '192x192',
-    '256x256',
-    '384x384',
-    '512x512'
-  ];
+  const sizes = ['96x96', '128x128', '192x192', '256x256', '384x384', '512x512'];
   const artworkMap = sizes.map((el) => {
     return { src: artworkUrl, sizes: el, type: 'image/png' };
   });
@@ -60,7 +49,7 @@ const metaDataCreator = (mediaTrack: MediaTrack) => {
     title,
     album,
     artist,
-    artwork: artworkMap
+    artwork: artworkMap,
   };
   return metaData;
 };
@@ -68,7 +57,7 @@ const metaDataCreator = (mediaTrack: MediaTrack) => {
 let previousTrackPlayTime = 0;
 export const calculateActualPlayedLength = (
   audioInstance: HTMLAudioElement,
-  event?: keyof AudioEvents
+  event?: keyof AudioEvents,
 ) => {
   const lengthSet = new Set();
   for (let i = 0; i < audioInstance.played.length; i++) {
@@ -80,22 +69,18 @@ export const calculateActualPlayedLength = (
   const lengthArr = [...lengthSet] as number[];
   const currentTrackPlayTime = lengthArr.reduce((acc, val) => acc + val, 0);
 
-  previousTrackPlayTime = ['ENDED', 'TRACK_CHANGE', 'PAUSE'].includes(
-    event as keyof AudioEvents
-  )
+  previousTrackPlayTime = ['ENDED', 'TRACK_CHANGE', 'PAUSE'].includes(event as keyof AudioEvents)
     ? currentTrackPlayTime
     : previousTrackPlayTime;
   ChangeNotifier.notify('AUDIO_STATE', {
     currentTrackPlayTime,
-    previousTrackPlayTime
+    previousTrackPlayTime,
   });
 };
 
-const loadScript = (
-  url: string,
-  onLoad: () => void,
-  name: string
-): Promise<void> => {
+const loadedScripts: { [key: string]: boolean } = {};
+
+const loadScript = (url: string, onLoad: () => void, name: string, async = true): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     if (window instanceof Window && window.document) {
       if (!loadedScripts[name]) {
@@ -103,32 +88,42 @@ const loadScript = (
         const script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = url;
-        script.async = true;
+        script.async = async;
         script.onload = () => {
+          console.log(`Script ${name} loaded successfully`);
           onLoad();
           resolve();
         };
+        script.onerror = (error) => {
+          console.error(`Error loading script ${name}:`, error);
+          reject(error);
+        };
         document.head.appendChild(script);
       } else {
+        console.log(`Script ${name} already loaded`);
         onLoad();
         resolve();
       }
     } else {
-      reject(`Window not ready unable to initialize ${name}`);
+      const errorMessage = `Window not ready, unable to initialize ${name}`;
+      console.error(errorMessage);
+      reject(errorMessage);
     }
   });
 };
 
 const handleQueuePlayback = () => {
-  const audio = new AudioX();
+  const audio = AudioX.getInstance(); // This will be an AudioX instance, not an HTMLAudioElement
   let hasEnded = false;
 
   const audioStateListener = (state: AudioState) => {
+    console.log('CAST_TEST:: handleQueuePlayback', state.playbackState, hasEnded);
     if (state.playbackState === 'ended' && !hasEnded) {
-      const queue = audio.getQueue();
+      const queue = audio.getQueue(); // This will work because audio is an AudioX instance
       hasEnded = true;
       if (queue && isValidArray(queue) && hasEnded) {
-        audio.playNext();
+        audio.playNext(); // This will work because audio is an AudioX instance
+        console.log('CAST_TEST:: handleQueuePlayback ');
       }
     }
     if (state.playbackState !== 'ended') {
@@ -163,7 +158,7 @@ const shuffle = <T>(array: T[]): T[] => {
 };
 
 const handleLoopPlayback = (loopMode: LoopMode) => {
-  const audio = new AudioX();
+  const audio = AudioX.getInstance();
   const audioInstance = AudioX.getAudioInstance();
 
   if (loopMode === 'OFF') {
@@ -180,6 +175,7 @@ const handleLoopPlayback = (loopMode: LoopMode) => {
     ChangeNotifier.listen('AUDIO_STATE', (audioState: AudioState) => {
       if (audioState.playbackState === 'queueended' && isValidArray(queue)) {
         audio.addMediaAndPlay(queue[0]);
+        console.log('CAST_TEST:: LOOP_CALLED ');
       }
     });
   }
@@ -226,7 +222,21 @@ const diffChecker = (d1: any, d2: any): boolean => {
   });
 };
 
+const createCastMediaTrack = (currentTrack: MediaTrack) => {
+  const castMediaTrack: GenericMediaTrack = {
+    images: currentTrack.artwork?.map((artwork) => ({ url: artwork.src })),
+    title: currentTrack.title,
+    artist: currentTrack.artist,
+    albumName: currentTrack.album,
+    subtitle: currentTrack.comment,
+    releaseDate: currentTrack.year as string,
+  };
+
+  return castMediaTrack;
+};
+
 export {
+  createCastMediaTrack,
   diffChecker,
   getBufferedDuration,
   getReadableErrorMessage,
@@ -238,5 +248,5 @@ export {
   isValidWindow,
   loadScript,
   metaDataCreator,
-  shuffle
+  shuffle,
 };
