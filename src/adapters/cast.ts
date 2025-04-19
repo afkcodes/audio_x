@@ -12,10 +12,10 @@ import type { JoinPolicy, MediaTrack } from 'types';
  */
 class CastAdapter {
   private static _instance: CastAdapter | null = null;
-  private castContext: any | null = null;
-  private chromeCast: any | null = null;
-  private remotePlayer: any | null = null;
-  private remotePlayerController: any | null = null;
+  private castContext: cast.framework.CastContext | null = null;
+  private chromeCast: typeof chrome.cast | null = null;
+  private remotePlayer: cast.framework.RemotePlayer | null = null;
+  private remotePlayerController: cast.framework.RemotePlayerController | null = null;
   private isInitialized = false;
   private castButtonId = 'cast-button-container';
   private sessionStateListener: ((event: any) => void) | null = null;
@@ -39,7 +39,11 @@ class CastAdapter {
    * @param retryDelay - Delay between retries in milliseconds
    * @returns Promise resolving to the cast context if successful
    */
-  async load(retryCount = 0, maxRetries = 15, retryDelay = 500): Promise<any | null> {
+  async load(
+    retryCount = 0,
+    maxRetries = 15,
+    retryDelay = 500,
+  ): Promise<cast.framework.CastContext | null> {
     try {
       // Check if Cast API is already available
       if (typeof window !== 'undefined' && window.cast && window.cast.framework) {
@@ -108,7 +112,7 @@ class CastAdapter {
   async init(
     receiverId: string = DEFAULT_CAST_CONFIG.receiverId,
     joinPolicy: keyof JoinPolicy = DEFAULT_CAST_CONFIG.joinPolicy,
-  ): Promise<any | undefined> {
+  ): Promise<cast.framework.CastContext | undefined> {
     try {
       if (this.isInitialized) {
         console.warn('Cast framework is already initialized.');
@@ -162,12 +166,12 @@ class CastAdapter {
    * Get the Cast context, initializing it if necessary.
    * @returns The Cast context or null if not available
    */
-  private getCastContext(): any | null {
+  private getCastContext(): cast.framework.CastContext | null {
     if (!this.castContext && typeof window !== 'undefined') {
       try {
         if (isValidWindow && window.cast?.framework) {
           this.castContext = window.cast.framework.CastContext.getInstance();
-          this.chromeCast = window.chrome.cast;
+          this.chromeCast = window.chrome?.cast ?? null;
           return this.castContext;
         }
         console.warn('Cast framework not loaded yet');
@@ -245,16 +249,18 @@ class CastAdapter {
         return;
       }
 
-      switch (event.sessionState) {
-        case window.cast.framework.SessionState.SESSION_STARTED:
-          this.onCastSessionStarted();
-          break;
-        case window.cast.framework.SessionState.SESSION_RESUMED:
-          this.onCastSessionResumed();
-          break;
-        case window.cast.framework.SessionState.SESSION_ENDED:
-          this.onCastSessionEnded();
-          break;
+      if (window.cast?.framework) {
+        switch (event.sessionState) {
+          case window.cast.framework.SessionState.SESSION_STARTED:
+            this.onCastSessionStarted();
+            break;
+          case window.cast.framework.SessionState.SESSION_RESUMED:
+            this.onCastSessionResumed();
+            break;
+          case window.cast.framework.SessionState.SESSION_ENDED:
+            this.onCastSessionEnded();
+            break;
+        }
       }
     };
 
@@ -274,10 +280,20 @@ class CastAdapter {
     if (session) {
       this.setupRemotePlayer();
 
-      // Notify state change
+      // Get the receiver name (cast device name)
+      const castDevice = session.getCastDevice();
+      const deviceName = castDevice?.friendlyName || 'Cast Device';
+
+      // Notify state change with device name
       ChangeNotifier.notify('CAST_STATE', {
         isCasting: true,
         castSession: session,
+        deviceName: deviceName,
+      });
+
+      // Also add device name to audio state
+      ChangeNotifier.notify('AUDIO_STATE', {
+        castDevice: deviceName,
       });
 
       // Load current track if available
@@ -299,10 +315,20 @@ class CastAdapter {
     if (session) {
       this.setupRemotePlayer();
 
-      // Notify state change
+      // Get the receiver name (cast device name)
+      const castDevice = session.getCastDevice();
+      const deviceName = castDevice?.friendlyName || 'Cast Device';
+
+      // Notify state change with device name
       ChangeNotifier.notify('CAST_STATE', {
         isCasting: true,
         castSession: session,
+        deviceName: deviceName,
+      });
+
+      // Also add device name to audio state
+      ChangeNotifier.notify('AUDIO_STATE', {
+        castDevice: deviceName,
       });
     }
   }
@@ -320,6 +346,12 @@ class CastAdapter {
     ChangeNotifier.notify('CAST_STATE', {
       isCasting: false,
       castSession: null,
+      deviceName: null,
+    });
+
+    // Remove cast device name from audio state
+    ChangeNotifier.notify('AUDIO_STATE', {
+      castDevice: '',
     });
   }
 
@@ -327,7 +359,7 @@ class CastAdapter {
    * Initialize the remote player and controller.
    */
   private initializeRemotePlayer(): void {
-    if ((isValidWindow && !window.cast) || !window.cast.framework) {
+    if (!isValidWindow || !window.cast?.framework) {
       console.error('Cast framework not available');
       return;
     }
@@ -438,7 +470,7 @@ class CastAdapter {
     console.log('Cast player state changed:', this.remotePlayer?.playerState);
 
     let playbackState: string | undefined;
-    if (!isValidWindow) {
+    if (!isValidWindow || !window.chrome?.cast) {
       console.log('no valid window context, returning :: CAST::onPlayerStateChanged');
       return;
     }
@@ -552,7 +584,7 @@ class CastAdapter {
   private onMediaInfoChanged(): void {
     const session = this.getCastSession();
     const mediaSession = session?.getMediaSession();
-    if (mediaSession) {
+    if (mediaSession?.media) {
       console.log('Media info changed:', mediaSession.media);
       ChangeNotifier.notify('AUDIO_STATE', {
         mediaInfo: mediaSession.media,
@@ -571,16 +603,18 @@ class CastAdapter {
     const queue = mediaSession?.getQueueItems();
 
     if (queue && currentItemId !== undefined) {
-      const currentIndex = queue.findIndex((item: any) => item.itemId === currentItemId);
+      const currentIndex = queue.findIndex(
+        (item: chrome.cast.media.QueueItem) => item.itemId === currentItemId,
+      );
       const nextTrack = queue[currentIndex + 1]?.media;
       if (nextTrack) {
-        console.log(`Moving to next track in queue: ${nextTrack.metadata.title}`);
+        console.log(`Moving to next track in queue: ${nextTrack.metadata?.title || 'Unknown'}`);
         ChangeNotifier.notify('AUDIO_STATE', {
           playbackState: PLAYBACK_STATE.PLAYING,
           currentTrack: {
-            title: nextTrack.metadata.title,
-            artist: nextTrack.metadata.artist,
-            album: nextTrack.metadata.albumName,
+            title: nextTrack.metadata?.title || 'Unknown Title',
+            artist: nextTrack.metadata?.artist || 'Unknown Artist',
+            album: nextTrack.metadata?.albumName || 'Unknown Album',
             source: nextTrack.contentId,
           },
         });
@@ -657,7 +691,7 @@ class CastAdapter {
    * @param mediaTrack - The media track to cast
    * @returns The created media info object
    */
-  private createCastMedia(mediaTrack: MediaTrack): any | null {
+  private createCastMedia(mediaTrack: MediaTrack): chrome.cast.media.MediaInfo | null {
     try {
       if (!this.chromeCast) {
         console.error('Chrome Cast API not available');
@@ -757,17 +791,20 @@ class CastAdapter {
    */
   loadQueue(tracks: MediaTrack[], startIndex = 0): void {
     const session = this.getCastSession();
-    if (!session) {
+    if (!session || !this.chromeCast) {
       console.error('No active cast session');
       return;
     }
 
-    const queueItems = tracks.map((track) => {
-      const mediaInfo = this.createCastMedia(track);
-      return new this.chromeCast!.media.QueueItem(mediaInfo);
-    });
+    const queueItems = tracks
+      .map((track) => {
+        const mediaInfo = this.createCastMedia(track);
+        if (!mediaInfo || !this.chromeCast) return null;
+        return new this.chromeCast.media.QueueItem(mediaInfo);
+      })
+      .filter((item): item is chrome.cast.media.QueueItem => item !== null);
 
-    const queueLoadRequest = new this.chromeCast!.media.QueueLoadRequest(queueItems);
+    const queueLoadRequest = new this.chromeCast.media.QueueLoadRequest(queueItems);
     queueLoadRequest.startIndex = startIndex;
     queueLoadRequest.autoplay = true;
 
@@ -821,13 +858,13 @@ class CastAdapter {
 
     // Create media info for the next track
     const mediaInfo = this.createCastMedia(nextTrack);
-    if (!mediaInfo) {
+    if (!mediaInfo || !this.chromeCast) {
       console.error('Failed to create media info for next track');
       return;
     }
 
     // Create load request with autoplay
-    const request = new this.chromeCast!.media.LoadRequest(mediaInfo);
+    const request = new this.chromeCast.media.LoadRequest(mediaInfo);
     request.autoplay = true;
 
     // Load the next track
@@ -867,13 +904,13 @@ class CastAdapter {
 
     // Create media info for the previous track
     const mediaInfo = this.createCastMedia(previousTrack);
-    if (!mediaInfo) {
+    if (!mediaInfo || !this.chromeCast) {
       console.error('Failed to create media info for previous track');
       return;
     }
 
     // Create load request with autoplay
-    const request = new this.chromeCast!.media.LoadRequest(mediaInfo);
+    const request = new this.chromeCast.media.LoadRequest(mediaInfo);
     request.autoplay = true;
 
     // Load the previous track
@@ -915,12 +952,12 @@ class CastAdapter {
       }
 
       const mediaInfo = this.createCastMedia(track);
-      if (!mediaInfo) {
+      if (!mediaInfo || !this.chromeCast) {
         reject(new Error('Failed to create media info'));
         return;
       }
 
-      const request = new this.chromeCast!.media.LoadRequest(mediaInfo);
+      const request = new this.chromeCast.media.LoadRequest(mediaInfo);
       request.autoplay = autoPlay;
 
       session
@@ -1014,7 +1051,7 @@ class CastAdapter {
    * Get the current cast session.
    * @returns The current cast session or null if none exists
    */
-  getCastSession(): any | null {
+  getCastSession(): cast.framework.CastSession | null {
     if (!this.castContext) {
       return null;
     }
@@ -1055,7 +1092,7 @@ class CastAdapter {
    * Get the remote player instance.
    * @returns The remote player instance
    */
-  getRemotePlayer(): any | null {
+  getRemotePlayer(): cast.framework.RemotePlayer | null {
     return this.remotePlayer;
   }
 
@@ -1063,7 +1100,7 @@ class CastAdapter {
    * Get the remote player controller.
    * @returns The remote player controller
    */
-  getRemotePlayerController(): any | null {
+  getRemotePlayerController(): cast.framework.RemotePlayerController | null {
     return this.remotePlayerController;
   }
 }
