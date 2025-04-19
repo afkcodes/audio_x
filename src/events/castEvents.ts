@@ -5,9 +5,7 @@ const CAST_REMOTE_PLAYER_EVENTS = {
   QUEUE_DATA_CHANGED: 'queueDataChanged',
   VIDEO_INFO_CHANGED: 'videoInfoChanged',
   DURATION_CHANGED: 'durationChanged',
-  CURRENT_TIME_CHANGED: 'currentTimeChanged',
   IS_PAUSED_CHANGED: 'isPausedChanged',
-  VOLUME_LEVEL_CHANGED: 'volumeLevelChanged',
   CAN_CONTROL_VOLUME_CHANGED: 'canControlVolumeChanged',
   IS_MUTED_CHANGED: 'isMutedChanged',
   CAN_PAUSE_CHANGED: 'canPauseChanged',
@@ -16,9 +14,7 @@ const CAST_REMOTE_PLAYER_EVENTS = {
   STATUS_TEXT_CHANGED: 'statusTextChanged',
   TITLE_CHANGED: 'titleChanged',
   DISPLAY_STATUS_CHANGED: 'displayStatusChanged',
-  MEDIA_INFO_CHANGED: 'mediaInfoChanged',
   IMAGE_URL_CHANGED: 'imageUrlChanged',
-  PLAYER_STATE_CHANGED: 'playerStateChanged',
   IS_PLAYING_BREAK_CHANGED: 'isPlayingBreakChanged',
   NUMBER_BREAK_CLIPS_CHANGED: 'numberBreakClipsChanged',
   CURRENT_BREAK_CLIP_NUMBER_CHANGED: 'currentBreakClipNumberChanged',
@@ -27,7 +23,13 @@ const CAST_REMOTE_PLAYER_EVENTS = {
   BREAK_ID_CHANGED: 'breakIdChanged',
   BREAK_CLIP_ID_CHANGED: 'breakClipIdChanged',
   WHEN_SKIPPABLE_CHANGED: 'whenSkippableChanged',
-  LIVE_SEEKABLE_RANGE_CHANGED: 'liveSeekableRangeChanged'
+  LIVE_SEEKABLE_RANGE_CHANGED: 'liveSeekableRangeChanged',
+  PLAYER_STATE_CHANGED: 'playerStateChanged',
+  CURRENT_TIME_CHANGED: 'currentTimeChanged',
+  VOLUME_LEVEL_CHANGED: 'volumeLevelChanged',
+  MEDIA_INFO_CHANGED: 'mediaInfoChanged',
+  QUEUE_ITEM_ENDED: 'queueItemEnded',
+  QUEUE_ENDED: 'queueEnded',
 };
 
 const CAST_SESSION_EVENTS = {
@@ -35,12 +37,12 @@ const CAST_SESSION_EVENTS = {
   APPLICATION_METADATA_CHANGED: 'applicationmetadatachanged',
   ACTIVE_INPUT_STATE_CHANGED: 'activeinputstatechanged',
   VOLUME_CHANGED: 'volumechanged',
-  MEDIA_SESSION: 'mediasession'
+  MEDIA_SESSION: 'mediasession',
 };
 
 const CAST_CONTEXT_STATE = {
   CAST_STATE_CHANGED: 'caststatechanged',
-  SESSION_STATE_CHANGED: 'sessionstatechanged'
+  SESSION_STATE_CHANGED: 'sessionstatechanged',
 };
 
 export { CAST_CONTEXT_STATE, CAST_REMOTE_PLAYER_EVENTS, CAST_SESSION_EVENTS };

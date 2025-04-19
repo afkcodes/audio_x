@@ -73,6 +73,13 @@ class AudioX {
     audioInstance = this._audio;
   }
 
+  static getInstance(): AudioX {
+    if (!AudioX._instance) {
+      new AudioX();
+    }
+    return AudioX._instance;
+  }
+
   /**
    * Initializes the AudioX instance with the provided properties.
    * @param {AudioInit} initProps - The initialization properties.
@@ -581,7 +588,9 @@ class AudioX {
       if (cast.isConnected() && cast.getRemotePlayerController()) {
         // Mute the cast device
         const controller = cast.getRemotePlayerController();
-        controller.muteOrUnmute();
+        if (controller) {
+          controller.muteOrUnmute();
+        }
         return;
       }
     }
@@ -774,13 +783,14 @@ class AudioX {
     const index = this._currentQueueIndex + 1;
     if (this?._queue?.length > index) {
       const nextTrack = this._queue[index];
+      console.log('CAST_TEST:: PLAY_NEXT', nextTrack, index);
 
       // Check if we're currently casting
       if (this.isCastingEnabled) {
         const cast = new CastAdapter();
         if (cast.isConnected() && cast.isMediaLoaded()) {
           // Use the CastAdapter's playNext for casting
-          cast.playNext(nextTrack);
+          cast.loadAndPlayTrack(nextTrack);
           this._currentQueueIndex = index;
           return;
         }
@@ -806,13 +816,14 @@ class AudioX {
 
     if (index >= 0) {
       const previousTrack = this?._queue[index];
+      console.log('CAST_TEST:: PLAY_PREVIOUS', previousTrack, index);
 
       // Check if we're currently casting
       if (this.isCastingEnabled) {
         const cast = new CastAdapter();
         if (cast.isConnected() && cast.isMediaLoaded()) {
           // Use the CastAdapter's playPrevious for casting
-          cast.playPrevious(previousTrack);
+          cast.loadAndPlayTrack(previousTrack);
           this._currentQueueIndex = index;
           return;
         }

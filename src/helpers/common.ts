@@ -113,15 +113,17 @@ const loadScript = (url: string, onLoad: () => void, name: string, async = true)
 };
 
 const handleQueuePlayback = () => {
-  const audio = new AudioX();
+  const audio = AudioX.getInstance(); // This will be an AudioX instance, not an HTMLAudioElement
   let hasEnded = false;
 
   const audioStateListener = (state: AudioState) => {
+    console.log('CAST_TEST:: handleQueuePlayback', state.playbackState, hasEnded);
     if (state.playbackState === 'ended' && !hasEnded) {
-      const queue = audio.getQueue();
+      const queue = audio.getQueue(); // This will work because audio is an AudioX instance
       hasEnded = true;
       if (queue && isValidArray(queue) && hasEnded) {
-        audio.playNext();
+        audio.playNext(); // This will work because audio is an AudioX instance
+        console.log('CAST_TEST:: handleQueuePlayback ');
       }
     }
     if (state.playbackState !== 'ended') {
@@ -156,7 +158,7 @@ const shuffle = <T>(array: T[]): T[] => {
 };
 
 const handleLoopPlayback = (loopMode: LoopMode) => {
-  const audio = new AudioX();
+  const audio = AudioX.getInstance();
   const audioInstance = AudioX.getAudioInstance();
 
   if (loopMode === 'OFF') {
@@ -173,6 +175,7 @@ const handleLoopPlayback = (loopMode: LoopMode) => {
     ChangeNotifier.listen('AUDIO_STATE', (audioState: AudioState) => {
       if (audioState.playbackState === 'queueended' && isValidArray(queue)) {
         audio.addMediaAndPlay(queue[0]);
+        console.log('CAST_TEST:: LOOP_CALLED ');
       }
     });
   }
