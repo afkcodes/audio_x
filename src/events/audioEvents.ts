@@ -1,4 +1,4 @@
-import { AudioEvents } from 'types';
+import type { AudioEvents } from 'types';
 
 export const AUDIO_EVENTS: AudioEvents = Object.freeze({
   ABORT: 'abort',
@@ -24,7 +24,7 @@ export const AUDIO_EVENTS: AudioEvents = Object.freeze({
   LOAD_START: 'loadstart',
   ERROR: 'error',
   TRACK_CHANGE: 'trackchange', // this is a custom event added to support track change
-  QUEUE_ENDED: 'queueended' // this is a custom event added to support end of queue
+  QUEUE_ENDED: 'queueended', // this is a custom event added to support end of queue
 });
 
 export const HLS_EVENTS = {
@@ -81,9 +81,9 @@ export const HLS_EVENTS = {
   KEY_LOADING: 'hlsKeyLoading',
   KEY_LOADED: 'hlsKeyLoaded',
   LIVE_BACK_BUFFER_REACHED: 'hlsLiveBackBufferReached',
-  BACK_BUFFER_REACHED: 'hlsBackBufferReached'
+  BACK_BUFFER_REACHED: 'hlsBackBufferReached',
 };
 
 export const CUSTOM_AUDIO_EVENTS = Object.freeze({
-  AUDIO_X_STATE: 'AUDIO_X_STATE'
+  AUDIO_X_STATE: 'AUDIO_X_STATE',
 });

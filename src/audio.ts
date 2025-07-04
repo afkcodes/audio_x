@@ -9,55 +9,49 @@ import {
   handleQueuePlayback,
   isValidArray,
   isValidFunction,
-  isValidObject
+  isValidObject,
 } from 'helpers/common';
-import ChangeNotifier from 'helpers/notifier';
+import { getLatestState, listen, notify } from 'helpers/notifier';
 import { shuffleQueue } from 'helpers/shuffleHelper';
 
-import {
-  attachMediaSessionHandlers,
-  updateMetaData
-} from 'mediasession/mediasessionHandler';
+import { attachMediaSessionHandlers, updateMetaData } from 'mediasession/mediasessionHandler';
 import { READY_STATE } from 'states/audioState';
-import {
+import type {
   AudioInit,
   AudioState,
   LoopMode,
   MediaTrack,
   PlaybackRate,
-  QueuePlaybackType
+  QueuePlaybackType,
 } from 'types/audio.types';
-import { EqualizerStatus, Preset } from 'types/equalizer.types';
+import type { EqualizerStatus, Preset } from 'types/equalizer.types';
 
 let audioInstance: HTMLAudioElement;
-const notifier = ChangeNotifier;
 
 class AudioX {
   private _audio: HTMLAudioElement;
-  private isPlayLogEnabled: Boolean;
+  private isPlayLogEnabled: boolean;
   private static _instance: AudioX;
   private _queue: MediaTrack[];
-  private _currentQueueIndex: number = 0;
+  private _currentQueueIndex = 0;
   private _fetchFn: (mediaTrack: MediaTrack) => Promise<void>;
   private eqStatus: EqualizerStatus = 'IDEAL';
-  private isEqEnabled: boolean = false;
+  private isEqEnabled = false;
   private eqInstance: Equalizer;
-  private showNotificationsActions: boolean = false;
+  private showNotificationsActions = false;
   private originalQueue: MediaTrack[] = [];
-  private isShuffled: boolean = false;
+  private isShuffled = false;
   private loopMode: LoopMode = 'OFF';
 
   constructor() {
     if (AudioX._instance) {
       console.warn(
-        'Instantiation failed: cannot create multiple instance of AudioX returning existing instance'
+        'Instantiation failed: cannot create multiple instance of AudioX returning existing instance',
       );
+      // biome-ignore lint/correctness/noConstructorReturn: <explanation>
       return AudioX._instance;
     }
-    if (
-      process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT &&
-      audioInstance
-    ) {
+    if (process.env.NODE_ENV !== AUDIO_X_CONSTANTS?.DEVELOPMENT && audioInstance) {
       throw new Error('Cannot create multiple audio instance');
     }
 
@@ -98,7 +92,7 @@ class AudioX {
       enableHls = false,
       enableEQ = false,
       crossOrigin = null,
-      hlsConfig = {}
+      hlsConfig = {},
     } = initProps;
 
     this._audio?.setAttribute('id', 'audio_x_instance');
@@ -112,7 +106,7 @@ class AudioX {
       if (useDefaultEventListeners) {
         console.warn(
           `useDefaultEventListeners is set to true at init, are you trying to use the default event listeners?
-            set customEventListeners to null to use default event listeners`
+            set customEventListeners to null to use default event listeners`,
         );
       }
       attachEventListeners(customEventListeners, false);
@@ -127,14 +121,11 @@ class AudioX {
 
     if (enableHls) {
       const hls = new HlsAdapter();
-      hls.init(hlsConfig, enablePlayLog);
+      hls.init(enablePlayLog, hlsConfig);
     }
   }
 
-  async addMedia(
-    mediaTrack: MediaTrack,
-    mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>
-  ) {
+  async addMedia(mediaTrack: MediaTrack, mediaFetchFn?: (mediaTrack: MediaTrack) => Promise<void>) {
     if (!mediaTrack) {
       return;
     }
@@ -157,10 +148,7 @@ class AudioX {
       calculateActualPlayedLength(audioInstance, 'TRACK_CHANGE');
     }
 
-    if (
-      mediaType === 'HLS' &&
-      !audioInstance.canPlayType('application/vnd.apple.mpegurl')
-    ) {
+    if (mediaType === 'HLS' && !audioInstance.canPlayType('application/vnd.apple.mpegurl')) {
       const hls = new HlsAdapter();
       const hlsInstance = hls.getHlsInstance();
       if (hlsInstance) {
@@ -168,7 +156,7 @@ class AudioX {
         hls.addHlsMedia(mediaTrack);
       } else {
         console.warn(
-          'The source provided seems to be a HLS stream but, hls playback is not enabled. Please have a look at init method of AudioX'
+          'The source provided seems to be a HLS stream but, hls playback is not enabled. Please have a look at init method of AudioX',
         );
         await this.reset();
       }
@@ -176,10 +164,10 @@ class AudioX {
       audioInstance.src = mediaTrack.source;
     }
 
-    notifier.notify('AUDIO_STATE', {
+    notify('AUDIO_STATE', {
       playbackState: PLAYBACK_STATE.TRACK_CHANGE,
       currentTrackPlayTime: 0,
-      currentTrack: mediaTrack
+      currentTrack: mediaTrack,
     });
 
     updateMetaData(mediaTrack);
@@ -192,7 +180,7 @@ class AudioX {
         const eq = new Equalizer();
         this.eqStatus = eq.status();
         this.eqInstance = eq;
-      } catch (e) {
+      } catch (_e) {
         console.log('failed to enable equalizer');
       }
     }
@@ -229,11 +217,10 @@ class AudioX {
 
   async addMediaAndPlay(
     mediaTrack?: MediaTrack | null,
-    fetchFn?: (mediaTrack: MediaTrack) => Promise<void>
+    fetchFn?: (mediaTrack: MediaTrack) => Promise<void>,
     // this should be passed when there something needs to be done before the audio starts playing
   ) {
-    const currentTrack =
-      mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
+    const currentTrack = mediaTrack || (this._queue.length > 0 ? this._queue[0] : undefined);
     if (fetchFn && isValidFunction(fetchFn) && currentTrack?.source.length) {
       this._fetchFn = fetchFn;
       await fetchFn(currentTrack as MediaTrack);
@@ -253,7 +240,7 @@ class AudioX {
       } else {
         console.error('Playback Failed, No MediaTrack Provided');
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Playback Failed');
     }
   }
@@ -289,8 +276,8 @@ class AudioX {
     const actualVolume = volume / 100;
     if (audioInstance) {
       audioInstance.volume = actualVolume;
-      notifier.notify('AUDIO_STATE', {
-        volume: volume
+      notify('AUDIO_STATE', {
+        volume: volume,
       });
     }
   }
@@ -300,8 +287,8 @@ class AudioX {
   setPlaybackRate(playbackRate: PlaybackRate) {
     if (audioInstance) {
       audioInstance.playbackRate = playbackRate;
-      notifier.notify('AUDIO_STATE', {
-        playbackRate
+      notify('AUDIO_STATE', {
+        playbackRate,
       });
     }
   }
@@ -319,7 +306,7 @@ class AudioX {
   }
 
   seekBy(time: number) {
-    if (audioInstance && audioInstance.currentTime) {
+    if (audioInstance?.currentTime) {
       const currentProgress = audioInstance.currentTime;
       audioInstance.currentTime = currentProgress + time;
     }
@@ -334,14 +321,11 @@ class AudioX {
   }
 
   subscribe(eventName: string, callback: (data: any) => void, state: any = {}) {
-    const unsubscribe = notifier.listen(eventName, callback, state);
+    const unsubscribe = listen(eventName, callback, state);
     return unsubscribe;
   }
 
-  addEventListener(
-    event: keyof HTMLMediaElementEventMap,
-    callback: (data: any) => void
-  ) {
+  addEventListener(event: keyof HTMLMediaElementEventMap, callback: (data: any) => void) {
     audioInstance.addEventListener(event, callback);
   }
 
@@ -375,7 +359,7 @@ class AudioX {
 
   addQueue(queue: MediaTrack[], playbackType: QueuePlaybackType) {
     this.clearQueue();
-    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
+    const audioState = getLatestState('AUDIO_X_STATE') as AudioState;
     const playerQueue = isValidArray(queue) ? queue.slice() : [];
     const currentTrack = isValidObject(audioState.currentTrack)
       ? audioState.currentTrack
@@ -388,11 +372,12 @@ class AudioX {
       case 'REVERSE':
         this._queue = playerQueue.reverse();
         break;
-      case 'SHUFFLE':
+      case 'SHUFFLE': {
         const newQueue = shuffleQueue(playerQueue, currentTrack?.id);
         this.addQueue(newQueue, 'DEFAULT');
         this.isShuffled = true;
         break;
+      }
       default:
         this._queue = playerQueue;
         break;
@@ -414,8 +399,8 @@ class AudioX {
     } else {
       // stop the audio and end trigger queue ended
       this.stop();
-      notifier.notify('AUDIO_STATE', {
-        playbackState: PLAYBACK_STATE.QUEUE_ENDED
+      notify('AUDIO_STATE', {
+        playbackState: PLAYBACK_STATE.QUEUE_ENDED,
       });
     }
   }
@@ -451,7 +436,7 @@ class AudioX {
 
   toggleShuffle() {
     // isShuffled is false initially
-    const audioState = notifier.getLatestState('AUDIO_X_STATE') as AudioState;
+    const audioState = getLatestState('AUDIO_X_STATE') as AudioState;
     const currentQueue = this._queue ?? this.getQueue();
     this.clearQueue(); // clearing Queue to check if it still stays
     const currentTrack = isValidObject(audioState.currentTrack)
@@ -497,9 +482,7 @@ class AudioX {
 
   removeFromQueue(mediaTrack: MediaTrack) {
     if (this._queue && isValidArray(this._queue)) {
-      const queue = this._queue.filter(
-        (track: MediaTrack) => track.id == mediaTrack.id
-      );
+      const queue = this._queue.filter((track: MediaTrack) => track.id === mediaTrack.id);
       this._queue = queue;
     }
   }

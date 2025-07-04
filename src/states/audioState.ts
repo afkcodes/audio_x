@@ -1,15 +1,15 @@
 import { PLAYBACK_STATE } from 'constants/common';
 import { diffChecker } from 'helpers/common';
-import ChangeNotifier from 'helpers/notifier';
-import { ReadyState } from 'types';
-import { AudioState, MediaTrack } from 'types/audio.types';
+import { getLatestState, listen, notify } from 'helpers/notifier';
+import type { ReadyState } from 'types';
+import type { AudioState, MediaTrack } from 'types/audio.types';
 
 export const READY_STATE: ReadyState = {
   HAVE_NOTHING: 0,
   HAVE_METADATA: 1,
   HAVE_CURRENT_DATA: 2,
   HAVE_FUTURE_DATA: 3,
-  HAVE_ENOUGH_DATA: 4
+  HAVE_ENOUGH_DATA: 4,
 };
 
 export const AUDIO_STATE: AudioState = {
@@ -22,26 +22,24 @@ export const AUDIO_STATE: AudioState = {
   error: {
     code: null,
     message: '',
-    readable: ''
+    readable: '',
   },
   currentTrack: {} as MediaTrack,
   currentTrackPlayTime: 0,
-  previousTrackPlayTime: 0
+  previousTrackPlayTime: 0,
 };
 
 /* Listen to state changes and update global audio state that is being exposed to outer world
   Do not subscribe to this event, this may cause unexpected behavior instead attach your own custom
   event listener, if you wish to have granular control on audio state. See: attachCustomEventListener 
 */
-ChangeNotifier.listen(
+listen(
   'AUDIO_STATE',
   (audioState: AudioState) => {
-    const latestState = ChangeNotifier.getLatestState(
-      'AUDIO_X_STATE'
-    ) as AudioState;
+    const latestState = getLatestState('AUDIO_X_STATE') as AudioState;
     if (!diffChecker(latestState, audioState)) {
-      ChangeNotifier.notify('AUDIO_X_STATE', { ...AUDIO_STATE, ...audioState });
+      notify('AUDIO_X_STATE', { ...AUDIO_STATE, ...audioState });
     }
   },
-  AUDIO_STATE
+  AUDIO_STATE,
 );

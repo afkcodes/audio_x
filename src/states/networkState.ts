@@ -1,6 +1,6 @@
 // import { NetworkState } from 'types/networkState.types';
 
-import { NetworkState } from 'types';
+import type { NetworkState } from 'types';
 
 // Ref: https://html.spec.whatwg.org/multipage/media.html#network-states
 export const NETWORK_STATE: NetworkState = Object.freeze({

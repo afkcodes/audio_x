@@ -9,7 +9,7 @@ import { URLS } from 'constants/common';
 import { HLS_EVENTS_CALLBACK_MAP } from 'events/hlsEvents';
 import { attachHlsEventsListeners } from 'events/listeners';
 import { loadScript } from 'helpers/common';
-import { MediaTrack } from 'types';
+import type { MediaTrack } from 'types';
 import type Hls from 'types/hls.js.js';
 import type { HlsConfig } from 'types/hls.js.js';
 
@@ -22,8 +22,9 @@ class HlsAdapter {
   constructor() {
     if (HlsAdapter._instance) {
       console.warn(
-        'Instantiation failed: cannot create multiple instance of HLS returning existing instance'
+        'Instantiation failed: cannot create multiple instance of HLS returning existing instance',
       );
+      // biome-ignore lint/correctness/noConstructorReturn: <explanation>
       return HlsAdapter._instance;
     }
     HlsAdapter._instance = this;
@@ -35,7 +36,7 @@ class HlsAdapter {
       () => {
         console.log('HLS Loaded');
       },
-      'hls'
+      'hls',
     )
       .then(() => {
         this.HlsClass = window.Hls;
@@ -48,7 +49,7 @@ class HlsAdapter {
     return this.HlsClass;
   }
 
-  async init(config: HlsConfig | {} = {}, enablePlayLog: boolean) {
+  async init(enablePlayLog: boolean, config: HlsConfig | Record<string, unknown> = {}) {
     const Hls = await this.load();
     if (Hls.isSupported()) {
       hlsInstance = new Hls(config);
@@ -61,7 +62,7 @@ class HlsAdapter {
     const audioInstance = AudioX.getAudioInstance();
     hlsInstance.loadSource(mediaTrack.source);
     hlsInstance.attachMedia(audioInstance);
-    hlsInstance.on(Hls.Events.MEDIA_ATTACHED, function () {
+    hlsInstance.on(Hls.Events.MEDIA_ATTACHED, () => {
       console.log('hls media attached');
     });
   }

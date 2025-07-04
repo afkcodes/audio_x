@@ -1,7 +1,7 @@
 import { AudioX } from 'audio';
 import { metaDataCreator } from 'helpers/common';
-import ChangeNotifier from 'helpers/notifier';
-import { AudioState } from 'types';
+import { listen } from 'helpers/notifier';
+import type { AudioState } from 'types';
 
 export const updateMetaData = (data: any) => {
   if ('mediaSession' in navigator) {
@@ -36,16 +36,12 @@ export const attachMediaSessionHandlers = () => {
 };
 
 export const updatePositionState = () => {
-  ChangeNotifier.listen('AUDIO_X_STATE', (audioState: AudioState) => {
-    if (
-      audioState?.duration &&
-      audioState?.playbackRate &&
-      audioState?.progress
-    ) {
+  listen('AUDIO_X_STATE', (audioState: AudioState) => {
+    if (audioState?.duration && audioState?.playbackRate && audioState?.progress) {
       navigator.mediaSession.setPositionState({
         duration: audioState.duration,
         playbackRate: audioState.playbackRate,
-        position: audioState.progress
+        position: audioState.progress,
       });
     }
   });
