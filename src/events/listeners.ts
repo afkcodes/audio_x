@@ -1,15 +1,15 @@
 import HlsAdapter from 'adapters/hls';
 import { AudioX } from 'audio';
 import { isValidArray } from 'helpers/common';
-import ChangeNotifier from 'helpers/notifier';
-import {
+import { notify } from 'helpers/notifier.js';
+import type {
   AudioEvents,
   EventListenerCallbackMap,
   EventListenersList,
   HlsEvents,
-  HlsEventsCallbackMap
+  HlsEventsCallbackMap,
 } from 'types/audioEvents.types';
-import { HlsListeners } from '../types/hls.js.js';
+import type { HlsListeners } from '../types/hls.js.js';
 import { AUDIO_EVENTS, HLS_EVENTS } from './audioEvents';
 
 /**
@@ -18,12 +18,12 @@ import { AUDIO_EVENTS, HLS_EVENTS } from './audioEvents';
  */
 const attachEventListeners = (
   eventListenersCallbackMap: EventListenerCallbackMap,
-  playLogEnabled: boolean = false
+  playLogEnabled = false,
 ) => {
   const audioInstance = AudioX.getAudioInstance();
-  isValidArray(Object.keys(eventListenersCallbackMap)) &&
-    Object.keys(eventListenersCallbackMap).forEach((evt) => {
-      let event = evt as keyof AudioEvents;
+  if (isValidArray(Object.keys(eventListenersCallbackMap))) {
+    for (const evt of Object.keys(eventListenersCallbackMap)) {
+      const event = evt as keyof AudioEvents;
       audioInstance?.addEventListener(AUDIO_EVENTS[event], (e: Event) => {
         if (evt && eventListenersCallbackMap[event]) {
           const listenerCallback = eventListenersCallbackMap[event];
@@ -32,55 +32,50 @@ const attachEventListeners = (
           }
         }
       });
-    });
+    }
+  }
 };
 
 const attachCustomEventListeners = (
   eventListenersList: EventListenersList,
-  enablePlayLog: boolean = false
+  enablePlayLog = false,
 ) => {
   const audioInstance = AudioX.getAudioInstance();
   if (isValidArray(eventListenersList)) {
-    eventListenersList.forEach((evt) => {
-      let event = evt as keyof AudioEvents;
+    for (const evt of eventListenersList) {
+      const event = evt as keyof AudioEvents;
       if (Object.keys(AUDIO_EVENTS).includes(event)) {
         audioInstance?.addEventListener(AUDIO_EVENTS[event], (e: Event) => {
-          ChangeNotifier.notify(AUDIO_EVENTS[event], {
+          notify(AUDIO_EVENTS[event], {
             e,
             audioInstance,
-            enablePlayLog
+            enablePlayLog,
           });
         });
       }
-    });
+    }
   }
 };
 
 const attachHlsEventsListeners = (
   hlsEventlistenerCallbackMap: HlsEventsCallbackMap,
-  playLogEnabled: boolean = false
+  playLogEnabled = false,
 ) => {
   const hls = new HlsAdapter();
   const hlsInstance = hls.getHlsInstance();
-  isValidArray(Object.keys(hlsEventlistenerCallbackMap)) &&
-    Object.keys(hlsEventlistenerCallbackMap).forEach((evt) => {
-      let event = evt as keyof HlsEvents;
-      hlsInstance.on(
-        HLS_EVENTS[event] as keyof HlsListeners,
-        (e: any, data: any) => {
-          if (event && hlsEventlistenerCallbackMap[event]) {
-            const listenerCallback = hlsEventlistenerCallbackMap[event];
-            if (typeof listenerCallback === 'function') {
-              listenerCallback(e, data, hlsInstance, playLogEnabled);
-            }
+  if (isValidArray(Object.keys(hlsEventlistenerCallbackMap))) {
+    for (const evt of Object.keys(hlsEventlistenerCallbackMap)) {
+      const event = evt as keyof HlsEvents;
+      hlsInstance.on(HLS_EVENTS[event] as keyof HlsListeners, (e: unknown, data: unknown) => {
+        if (event && hlsEventlistenerCallbackMap[event]) {
+          const listenerCallback = hlsEventlistenerCallbackMap[event];
+          if (typeof listenerCallback === 'function') {
+            listenerCallback(e as Event, data, hlsInstance, playLogEnabled);
           }
         }
-      );
-    });
+      });
+    }
+  }
 };
 
-export {
-  attachCustomEventListeners,
-  attachEventListeners,
-  attachHlsEventsListeners
-};
+export { attachCustomEventListeners, attachEventListeners, attachHlsEventsListeners };

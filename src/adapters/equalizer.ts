@@ -2,7 +2,7 @@ import { AudioX } from 'audio';
 import { bands, presets } from 'constants/equalizer';
 import { isValidArray } from 'helpers/common';
 
-import { EqualizerStatus, Preset } from 'types/equalizer.types';
+import type { EqualizerStatus, Preset } from 'types/equalizer.types';
 
 class Equalizer {
   private static _instance: Equalizer;
@@ -18,8 +18,9 @@ class Equalizer {
   constructor() {
     if (Equalizer._instance) {
       console.warn(
-        'Instantiation failed: cannot create multiple instances of Equalizer. Returning existing instance.'
+        'Instantiation failed: cannot create multiple instances of Equalizer. Returning existing instance.',
       );
+      // biome-ignore lint/correctness/noConstructorReturn: <explanation>
       return Equalizer._instance;
     }
 
@@ -35,13 +36,9 @@ class Equalizer {
   private initializeAudioContext() {
     const audioContextOptions = { latencyHint: 'playback' };
     if (typeof AudioContext !== 'undefined') {
-      this.audioCtx = new AudioContext(
-        audioContextOptions as AudioContextOptions
-      );
+      this.audioCtx = new AudioContext(audioContextOptions as AudioContextOptions);
     } else if (typeof (window as any).webkitAudioContext !== 'undefined') {
-      this.audioCtx = new (window as any).webkitAudioContext(
-        audioContextOptions
-      );
+      this.audioCtx = new (window as any).webkitAudioContext(audioContextOptions);
     } else {
       console.error('Web Audio API is not supported in this browser.');
     }
@@ -130,19 +127,17 @@ class Equalizer {
       return;
     }
 
-    if (
-      !this.eqFilterBands ||
-      this.eqFilterBands.length !== preset.gains.length
-    ) {
+    if (!this.eqFilterBands || this.eqFilterBands.length !== preset.gains.length) {
       console.error('Invalid data provided.');
       return;
     }
 
     const currentTime = this.audioCtx.currentTime;
-    this.eqFilterBands.forEach((band, index) => {
+    for (let index = 0; index < this.eqFilterBands.length; index++) {
+      const band = this.eqFilterBands[index];
       const targetGain = preset.gains[index];
       band.gain.setTargetAtTime(targetGain, currentTime, 0.05);
-    });
+    }
   }
 
   /**
@@ -171,9 +166,10 @@ class Equalizer {
   setCustomEQ(gains: number[]) {
     if (isValidArray(gains) && gains.length === this.eqFilterBands.length) {
       const currentTime = this.audioCtx.currentTime;
-      this.eqFilterBands.forEach((band: BiquadFilterNode, index: number) => {
+      for (let index = 0; index < this.eqFilterBands.length; index++) {
+        const band = this.eqFilterBands[index];
         band.gain.setTargetAtTime(gains[index], currentTime, 0.05);
-      });
+      }
     } else {
       console.error('Invalid array of gains provided.');
     }
@@ -184,7 +180,7 @@ class Equalizer {
    * @param {boolean} enable - Whether to enable or disable bass boost.
    * @param {number} gain - The gain value for bass boost.
    */
-  setBassBoost(enable: boolean, gain: number = 6) {
+  setBassBoost(enable: boolean, gain = 6) {
     const currentTime = this.audioCtx.currentTime;
     if (enable) {
       this.bassBoostFilter.gain.setTargetAtTime(gain, currentTime, 0.05);
@@ -203,32 +199,16 @@ class Equalizer {
         this.compressor.threshold.setTargetAtTime(
           options.threshold,
           this.audioCtx.currentTime,
-          0.01
+          0.01,
         );
       if (options.knee !== undefined)
-        this.compressor.knee.setTargetAtTime(
-          options.knee,
-          this.audioCtx.currentTime,
-          0.01
-        );
+        this.compressor.knee.setTargetAtTime(options.knee, this.audioCtx.currentTime, 0.01);
       if (options.ratio !== undefined)
-        this.compressor.ratio.setTargetAtTime(
-          options.ratio,
-          this.audioCtx.currentTime,
-          0.01
-        );
+        this.compressor.ratio.setTargetAtTime(options.ratio, this.audioCtx.currentTime, 0.01);
       if (options.attack !== undefined)
-        this.compressor.attack.setTargetAtTime(
-          options.attack,
-          this.audioCtx.currentTime,
-          0.01
-        );
+        this.compressor.attack.setTargetAtTime(options.attack, this.audioCtx.currentTime, 0.01);
       if (options.release !== undefined)
-        this.compressor.release.setTargetAtTime(
-          options.release,
-          this.audioCtx.currentTime,
-          0.01
-        );
+        this.compressor.release.setTargetAtTime(options.release, this.audioCtx.currentTime, 0.01);
     }
   }
 
@@ -237,9 +217,9 @@ class Equalizer {
    */
   reset() {
     const currentTime = this.audioCtx.currentTime;
-    this.eqFilterBands.forEach((band: BiquadFilterNode) => {
+    for (const band of this.eqFilterBands) {
       band.gain.setTargetAtTime(0, currentTime, 0.05);
-    });
+    }
     this.bassBoostFilter.gain.setTargetAtTime(0, currentTime, 0.05);
   }
 }

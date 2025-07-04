@@ -1,4 +1,4 @@
-import { MediaTrack } from 'types';
+import type { MediaTrack } from 'types';
 
 /**
  * Shuffles a queue of tracks while maintaining the position of the currently playing track
@@ -6,10 +6,7 @@ import { MediaTrack } from 'types';
  * @param currentTrackId The ID of the currently playing track (optional)
  * @returns A new shuffled array of tracks
  */
-export const shuffleQueue = (
-  queue: MediaTrack[],
-  currentTrackId?: string
-): MediaTrack[] => {
+export const shuffleQueue = (queue: MediaTrack[], currentTrackId?: string): MediaTrack[] => {
   if (!queue.length) return [];
 
   // If no current track, shuffle the entire queue
@@ -36,7 +33,7 @@ export const shuffleQueue = (
   return [
     ...shuffledRest.slice(0, currentIndex),
     queue[currentIndex],
-    ...shuffledRest.slice(currentIndex)
+    ...shuffledRest.slice(currentIndex),
   ];
 };
 

@@ -1,23 +1,23 @@
-import {
+import type {
   AudioError,
   AudioInit,
   AudioState,
   InitMode,
   MediaArtwork,
   MediaTrack,
-  PlaybackRate,
   PlayBackState,
-  QueuePlaybackType
+  PlaybackRate,
+  QueuePlaybackType,
 } from './audio.types';
-import {
+import type {
   AudioEvents,
   EventListenerCallbackMap,
-  EventListenersList
+  EventListenersList,
 } from './audioEvents.types';
-import { ReadyState } from './audioState.types';
-import { Band, EqualizerStatus, Preset } from './equalizer.types';
-import { ErrorEvents } from './errorEvents.types';
-import { NetworkState } from './networkState.types';
+import type { ReadyState } from './audioState.types';
+import type { Band, EqualizerStatus, Preset } from './equalizer.types';
+import type { ErrorEvents } from './errorEvents.types';
+import type { NetworkState } from './networkState.types';
 
 export type {
   AudioError,
@@ -37,5 +37,5 @@ export type {
   PlayBackState,
   Preset,
   QueuePlaybackType,
-  ReadyState
+  ReadyState,
 };

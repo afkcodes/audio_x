@@ -1,4 +1,4 @@
-import { ErrorEvents } from 'types/errorEvents.types';
+import type { ErrorEvents } from 'types/errorEvents.types';
 
 export const ERROR_EVENTS: ErrorEvents = Object.freeze({
   1: 'MEDIA_ERR_ABORTED',

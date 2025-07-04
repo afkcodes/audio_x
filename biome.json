@@ -11,7 +11,7 @@
         "noUnusedVariables": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "off"
       },
       "style": {
         "noNonNullAssertion": "off"
@@ -32,6 +32,6 @@
   },
   "files": {
     "include": ["src/**/*.ts", "src/**/*.tsx", "*.json", "*.js", "*.ts"],
-    "ignore": ["node_modules", "dist"]
+    "ignore": ["node_modules", "dist", "src/types/hls.js.d.ts"]
   }
 }

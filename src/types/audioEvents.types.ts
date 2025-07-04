@@ -1,4 +1,4 @@
-import Hls from './hls.js.js';
+import type Hls from './hls.js.js';
 
 export interface AudioEvents {
   ABORT: 'abort';
@@ -88,15 +88,13 @@ export interface CustomAudioState {
   AUDIO_X_STATE: 'AUDIO_X_STATE';
 }
 
-export type EventListenersList =
-  | Array<keyof AudioEvents>
-  | Array<keyof CustomAudioState>;
+export type EventListenersList = Array<keyof AudioEvents> | Array<keyof CustomAudioState>;
 
 export type EventListenerCallbackMap = {
   [key in keyof Partial<AudioEvents>]: (
     e: Event,
     audioInstance: HTMLAudioElement,
-    playLogEnabled: boolean
+    playLogEnabled: boolean,
   ) => void;
 };
 
@@ -105,6 +103,6 @@ export type HlsEventsCallbackMap = {
     e: Event,
     data: any,
     audioInstance: Hls,
-    playLogEnabled: boolean
+    playLogEnabled: boolean,
   ) => void;
 };

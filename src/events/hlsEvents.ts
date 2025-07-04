@@ -1,6 +1,6 @@
 import { PLAYBACK_STATE } from 'constants/common';
-import ChangeNotifier from 'helpers/notifier';
-import { HlsEventsCallbackMap } from 'types/audioEvents.types';
+import { notify } from 'helpers/notifier';
+import type { HlsEventsCallbackMap } from 'types/audioEvents.types';
 
 export const HLS_EVENTS_CALLBACK_MAP: HlsEventsCallbackMap = {
   ERROR: (e: Event, data: any) => {
@@ -9,21 +9,21 @@ export const HLS_EVENTS_CALLBACK_MAP: HlsEventsCallbackMap = {
     const isFatal = data.fatal;
     console.log('STATUS', e.type);
 
-    ChangeNotifier.notify(
+    notify(
       'AUDIO_STATE',
       {
         playbackState: PLAYBACK_STATE.ERROR,
         error: {
           type,
           isFatal,
-          detail
-        }
+          detail,
+        },
       },
-      `audiox_baseEvents_state_${e.type}`
+      `audiox_baseEvents_state_${e.type}`,
     );
   },
 
   FRAG_CHANGED: () => {
     console.log('FRAG_CHANGED');
-  }
+  },
 };
