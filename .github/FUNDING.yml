@@ -1,0 +1,12 @@
+# Puts a "Sponsor" button at the top of the repository, beside Watch and Fork.
+#
+# GitHub Sponsors is deliberately absent: it pays out through Stripe Connect, and
+# without that the listing cannot be published — `hasSponsorsListing` is false, so
+# a `github:` entry here would render a button that leads nowhere. It goes in the
+# day that changes, and not before.
+ko_fi: afkcodes
+
+# Arbitrary URLs, for rails GitHub has no key for. This one is ours, which is the
+# point: a page on a domain we own cannot be closed by somebody else's policy
+# change, and it can carry whatever actually works to receive money here.
+custom: ["https://afk.codes/sponsor"]
